@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NBA Playoffs · Dashboard</title>
+<title>NBA Stats Tracker 🏀</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -440,15 +440,17 @@ html, body {
   letter-spacing: 2px;
   text-transform: uppercase;
   color: var(--text-sub);
-  padding: 6px 10px;
+  padding: 7px 10px;
   border-bottom: 2px solid var(--border-mid);
   text-align: left;
+  height: 32px;
 }
 .stats-tbl th:last-child { text-align: right; }
 .stats-tbl td {
   font-family: var(--font-mono);
-  font-size: 15px;
-  padding: 9px 10px;
+  font-size: 17px;
+  padding: 0 10px;
+  height: 44px;
   border-bottom: 1px solid var(--border);
   color: var(--text);
   vertical-align: middle;
@@ -463,10 +465,10 @@ html, body {
   color: var(--text-sub);
   white-space: nowrap;
 }
-.stats-tbl td.val-cell { font-size: 18px; font-weight: 500; }
+.stats-tbl td.val-cell { font-size: 17px; font-weight: 500; }
 .stats-tbl td.var-cell {
   text-align: right;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 500;
   white-space: nowrap;
 }
@@ -482,7 +484,7 @@ html, body {
 }
 
 /* ── Analysis blocks */
-.an-blocks { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.an-blocks { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
 
 .an-block {
   border: 1px solid var(--border);
@@ -512,6 +514,48 @@ html, body {
   color: var(--text);
 }
 
+/* Analysis comparison table */
+.an-tbl {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 4px;
+}
+.an-tbl th {
+  font-family: var(--font-condensed);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-sub);
+  padding: 7px 8px;
+  border-bottom: 2px solid var(--border-mid);
+  text-align: right;
+  height: 32px;
+}
+.an-tbl th:first-child { text-align: left; }
+.an-tbl td {
+  font-family: var(--font-mono);
+  font-size: 17px;
+  padding: 0 8px;
+  height: 44px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  text-align: right;
+  vertical-align: middle;
+}
+.an-tbl tr:last-child td { border-bottom: none; }
+.an-tbl td:first-child {
+  font-family: var(--font-condensed);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-sub);
+  text-align: left;
+}
+.an-tbl td.an-prior { color: var(--text-sub); font-size: 15px; }
+.an-tbl td.an-nil   { color: var(--text-dim); font-size: 11px; }
+
 /* ── Gates — three tiers */
 .gate-tiers {
   display: flex;
@@ -528,9 +572,12 @@ html, body {
   letter-spacing: 2px;
   text-transform: uppercase;
   color: var(--text-sub);
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 2px solid var(--border-mid);
   margin-bottom: 8px;
-  padding-bottom: 6px;
-  border-bottom: 2px solid var(--border);
 }
 
 .gate-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -583,6 +630,32 @@ html, body {
 ::-webkit-scrollbar-track { background: var(--bg); }
 ::-webkit-scrollbar-thumb { background: var(--border-hi); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-sub); }
+
+
+/* ─── FLIP BUTTON ────────────────────────────────────────── */
+.team-name-wrap {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.flip-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  align-self: center;
+  transition: transform 0.4s;
+  padding: 0;
+}
+.flip-btn:hover { transform: rotate(180deg); }
+.flip-btn.visible { display: flex; }
 
 /* ─── LOCK SCREEN ────────────────────────────────────────── */
 #lockScreen {
@@ -732,7 +805,17 @@ html, body {
 
 <!-- TEAM BANNER -->
 <div class="team-banner" id="teamBanner">
-  <div class="team-name-display" id="teamNameDisp"></div>
+  <div class="team-name-wrap">
+    <div class="team-name-display" id="teamNameDisp"></div>
+    <button class="flip-btn" id="flipBtn" onclick="flipTeam()" title="Switch to opposing team">
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+    <path d="M21 3v5h-5"/>
+    <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+    <path d="M8 16H3v5"/>
+  </svg>
+</button>
+  </div>
   <div class="team-meta-line" id="teamMeta"></div>
 </div>
 
@@ -1100,6 +1183,16 @@ function renderDashboard() {
     return `<span style="background:#374151;color:#fff;padding:2px 10px;border-radius:20px;font-size:13px;font-weight:500;white-space:nowrap;">GM ${g}: <strong style="color:#86efac">${homeAbr}</strong> ${row.homeScore} – ${row.awayScore} <strong style="color:#fca5a5">${awayAbr}</strong></span>`;
   }).filter(Boolean).join(' <span style="color:var(--border-hi);margin:0 2px">|</span> ');
 
+  // Determine opposing team and show/hide flip button
+  const opposingTeam = homeTeamFull === selTeam ? awayTeamFull : homeTeamFull;
+  const flipBtn = document.getElementById('flipBtn');
+  if (opposingTeam && opposingTeam !== selTeam) {
+    flipBtn.classList.add('visible');
+    flipBtn.dataset.target = opposingTeam;
+  } else {
+    flipBtn.classList.remove('visible');
+  }
+
   const metaParts = [
     `<span>Round ${selRound}</span>`,
     `<span class="meta-dot"></span>`,
@@ -1124,6 +1217,191 @@ function renderDashboard() {
     main.appendChild(makeSection('ANALYSIS', 'Min · Max · Avg · Median per round', buildAnalysisTable(players, games, activeStats)));
     main.appendChild(makeSection('GATES',    'Suggested over / under lines',       buildGatesTable(players, games, activeStats)));
   }
+}
+
+
+// ─── Area line chart for Stats focused card ───────────────
+function buildAreaChart(player, stat, games) {
+  const playedGames = games.filter(g => {
+    const row = player.games[g];
+    return row && !row.isDNP && row[stat.key] !== null && row[stat.key] !== 0;
+  });
+  if (playedGames.length === 0) return '';
+
+  const vals   = playedGames.map(g => player.games[g][stat.key]);
+  const maxVal = Math.max(...vals);
+  const minVal = Math.min(...vals);
+  const range  = maxVal - minVal || 1;
+
+  const W=380, H=120, padL=20, padR=20, padT=38, padB=28;
+  const chartW = W - padL - padR;
+  const chartH = H - padT - padB;
+  const yMin   = Math.max(0, minVal - range * 0.35);
+  const yMax   = maxVal + range * 0.35;
+  const yRange = yMax - yMin || 1;
+  const base   = padT + chartH;
+
+  const pts = playedGames.map((g, i) => {
+    const x = playedGames.length > 1
+      ? padL + i * (chartW / (playedGames.length - 1))
+      : padL + chartW / 2;
+    const y = padT + chartH - ((vals[i] - yMin) / yRange) * chartH;
+    return { x, y, val: vals[i], g };
+  });
+
+  const linePath  = pts.map((p,i) => `${i===0?'M':'L'}${p.x},${p.y}`).join(' ');
+  const areaPath  = [
+    `M${pts[0].x},${base}`,
+    ...pts.map(p => `L${p.x},${p.y}`),
+    `L${pts[pts.length-1].x},${base}Z`
+  ].join(' ');
+
+  const labels = pts.map(p =>
+    `<text x="${p.x}" y="${base+16}" text-anchor="middle" fill="#9ca3af" font-size="9" font-family="Barlow Condensed,sans-serif" font-weight="700" letter-spacing="1">GM${p.g}</text>`
+  ).join('');
+
+  const circles = pts.map(p => `
+    <circle cx="${p.x}" cy="${p.y}" r="6" fill="#2563eb" stroke="white" stroke-width="2.5"/>
+    <text x="${p.x}" y="${p.y-13}" text-anchor="middle" fill="#111827" font-size="12" font-weight="600" font-family="DM Mono,monospace">${p.val}</text>
+  `).join('');
+
+  return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;margin-bottom:16px">
+    <defs>
+      <linearGradient id="areaGrad${stat.key}" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#2563eb" stop-opacity="0.18"/>
+        <stop offset="100%" stop-color="#2563eb" stop-opacity="0.01"/>
+      </linearGradient>
+    </defs>
+    <line x1="${padL}" y1="${base}" x2="${W-padR}" y2="${base}" stroke="#e4e9f0" stroke-width="1"/>
+    <path d="${areaPath}" fill="url(#areaGrad${stat.key})"/>
+    <path d="${linePath}" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+    ${labels}${circles}
+  </svg>`;
+}
+
+// ─── Range strip for Analysis focused card ───────────────
+function buildRangeStrip(an) {
+  if (!an) return '';
+
+  const fmt = v => Number.isInteger(v) ? v : v.toFixed(1);
+
+  // Fixed chart dimensions — same height as area chart for uniformity
+  const W=380, H=120, padL=30, padR=30, padT=44, padB=32;
+  const chartW = W - padL - padR;
+  const stripY = padT + (H - padT - padB) / 2; // vertical centre
+
+  const minVal = an.min;
+  const maxVal = an.max;
+  const span   = maxVal - minVal || 1;
+
+  // Map a value to an x position between padL and W-padR
+  const toX = v => padL + ((v - minVal) / span) * chartW;
+
+  const points = [
+    { label:'MIN', val:an.min, col:'#dc2626' },
+    { label:'AVG', val:an.avg, col:'#2563eb' },
+    { label:'MED', val:an.med, col:'#6b7280' },
+    { label:'MAX', val:an.max, col:'#059669' },
+  ];
+
+  // Track label positions to offset overlapping ones
+  const dots = points.map(p => {
+    const x = toX(p.val);
+    return { ...p, x };
+  });
+
+  // Thin track line (full width, light)
+  const track = `<line x1="${padL}" y1="${stripY}" x2="${W-padR}" y2="${stripY}" stroke="#e4e9f0" stroke-width="4" stroke-linecap="round"/>`;
+
+  // Coloured fill from MIN to MAX (which is always full width here)
+  // Instead fill from AVG dot left to show distribution
+  const fill = `<line x1="${padL}" y1="${stripY}" x2="${W-padR}" y2="${stripY}" stroke="#dbeafe" stroke-width="4" stroke-linecap="round"/>`;
+
+  // AVG highlighted segment
+  const avgX  = toX(an.avg);
+  const highlight = `<line x1="${padL}" y1="${stripY}" x2="${avgX}" y2="${stripY}" stroke="#93c5fd" stroke-width="4" stroke-linecap="round"/>`;
+
+  const dotEls = dots.map((p, i) => {
+    // Alternate value labels above/below to avoid collision
+    const above  = i % 2 === 0;
+    const labelY = above ? stripY - 18 : stripY + 30;
+    const valY   = above ? stripY - 30 : stripY + 42;
+    return `
+      <circle cx="${p.x}" cy="${stripY}" r="10" fill="white" stroke="${p.col}" stroke-width="2.5"/>
+      <text x="${p.x}" y="${valY}" text-anchor="middle" fill="#111827" font-size="12" font-weight="600" font-family="DM Mono,monospace">${fmt(p.val)}</text>
+      <text x="${p.x}" y="${labelY}" text-anchor="middle" fill="${p.col}" font-size="9" font-weight="700" font-family="Barlow Condensed,sans-serif" letter-spacing="1">${p.label}</text>`;
+  }).join('');
+
+  return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;margin-bottom:16px">
+    ${track}${fill}${highlight}${dotEls}
+  </svg>`;
+}
+
+
+// ─── Gate fan chart for Gates focused card ────────────────
+function buildGateChart(allGates) {
+  const W=380, H=120, padL=30, padR=30, padT=30, padB=24;
+  const chartW = W - padL - padR;
+  const chartH = H - padT - padB;
+  const base   = padT + chartH;
+
+  // Order all 6 lines by value (lowest to highest)
+  const lines = [
+    { val: allGates.conservative.ovr, col:'#059669', label:'CON' },
+    { val: allGates.moderate.ovr,     col:'#d97706', label:'MOD' },
+    { val: allGates.aggressive.ovr,   col:'#dc2626', label:'AGG' },
+    { val: allGates.aggressive.und,   col:'#dc2626', label:'AGG' },
+    { val: allGates.moderate.und,     col:'#d97706', label:'MOD' },
+    { val: allGates.conservative.und, col:'#059669', label:'CON' },
+  ].filter(l => l.val !== null).sort((a,b) => a.val - b.val);
+
+  if (!lines.length) return '';
+
+  const vals   = lines.map(l => l.val);
+  const maxVal = Math.max(...vals);
+  const minVal = Math.min(...vals);
+  const range  = maxVal - minVal || 1;
+  const yMin   = 0;
+  const yRange = maxVal * 1.15 || 1;
+
+  const xStep = chartW / (lines.length - 1);
+
+  // Draw connecting lines between same-tier pairs (like a bracket)
+  const conOvr = lines.find(l => l.label==='CON' && l.val === allGates.conservative.ovr);
+  const conUnd = lines.find(l => l.label==='CON' && l.val === allGates.conservative.und);
+  const modOvr = lines.find(l => l.label==='MOD' && l.val === allGates.moderate.ovr);
+  const modUnd = lines.find(l => l.label==='MOD' && l.val === allGates.moderate.und);
+
+  const toX = i => padL + i * xStep;
+  const toY = v => padT + chartH - (v / yRange) * chartH;
+
+  // Horizontal connectors at baseline level between each pair
+  const brackets = `
+    <line x1="${toX(0)}" y1="${base}" x2="${toX(5)}" y2="${base}" stroke="#dbeafe" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="${toX(1)}" y1="${base}" x2="${toX(4)}" y2="${base}" stroke="#fef3c7" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="${toX(2)}" y1="${base}" x2="${toX(3)}" y2="${base}" stroke="#fee2e2" stroke-width="2.5" stroke-linecap="round"/>`;
+
+  const bars = lines.map((l, i) => {
+    const x  = toX(i);
+    const y  = toY(l.val);
+    return `
+      <line x1="${x}" y1="${base}" x2="${x}" y2="${y}" stroke="${l.col}" stroke-width="1.2" stroke-linecap="round"/>
+      <circle cx="${x}" cy="${y}" r="4" fill="${l.col}"/>
+      <text x="${x}" y="${y-9}" text-anchor="middle" fill="#111827" font-size="11" font-weight="600" font-family="DM Mono,monospace">${l.val}</text>`;
+  }).join('');
+
+  // Legend — centred at top
+  const legend = `
+    <circle cx="${W/2 - 118}" cy="10" r="4" fill="#059669"/>
+    <text x="${W/2 - 110}" y="14" fill="#6b7280" font-size="8" font-weight="700" font-family="Barlow Condensed,sans-serif" letter-spacing="1">CONSERVATIVE</text>
+    <circle cx="${W/2 - 12}" cy="10" r="4" fill="#d97706"/>
+    <text x="${W/2 - 4}" y="14" fill="#6b7280" font-size="8" font-weight="700" font-family="Barlow Condensed,sans-serif" letter-spacing="1">MODERATE</text>
+    <circle cx="${W/2 + 62}" cy="10" r="4" fill="#dc2626"/>
+    <text x="${W/2 + 70}" y="14" fill="#6b7280" font-size="8" font-weight="700" font-family="Barlow Condensed,sans-serif" letter-spacing="1">AGGRESSIVE</text>`;
+
+  return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;margin-bottom:16px">
+    ${brackets}${bars}${legend}
+  </svg>`;
 }
 
 // ─── Focused side-by-side view ────────────────────────────
@@ -1205,6 +1483,7 @@ function renderFocusedView(container, player, games) {
       <div class="focused-card-sub">${stat.label} · ${player.name} · Round ${selRound}</div>
     </div>
     <div class="focused-card-body">
+      ${buildAreaChart(player, stat, allGameNums)}
       <table class="stats-tbl">
         <thead><tr>
           <th>Game</th>
@@ -1221,22 +1500,58 @@ function renderFocusedView(container, player, games) {
   const anCard = document.createElement('div');
   anCard.className = 'focused-card';
 
-  const anItems = [
-    { key:'min', label:'MIN' },
-    { key:'max', label:'MAX' },
-    { key:'avg', label:'AVG' },
-    { key:'med', label:'MED' },
+  // Prior = all played games except the most recent
+  const playedGames  = games.filter(g => {
+    const r = player.games[g];
+    return r && !r.isDNP && r[stat.key] !== null;
+  }).sort((a,b) => a-b);
+
+  const priorGames = playedGames.slice(0, -1); // drop last game
+  const priorVals  = priorGames.map(g => player.games[g][stat.key]);
+
+  const priorAn = priorVals.length ? {
+    min: Math.min(...priorVals),
+    max: Math.max(...priorVals),
+    avg: priorVals.reduce((a,b)=>a+b,0)/priorVals.length,
+    med: median(priorVals)
+  } : null;
+
+  const fmt = v => v !== null && v !== undefined
+    ? (Number.isInteger(v) ? v : v.toFixed(1))
+    : '—';
+
+  const varPct = (curr, prior) => {
+    if (curr === null || prior === null || prior === 0) return '<span class="var-nil">—</span>';
+    const pct  = ((curr - prior) / prior) * 100;
+    const sign = pct >= 0 ? '↑' : '↓';
+    const cls  = pct >= 0 ? 'var-up' : 'var-down';
+    return `<span class="${cls}">${sign} ${Math.abs(pct).toFixed(0)}%</span>`;
+  };
+
+  const anRows = [
+    { label:'MIN', key:'min' },
+    { label:'MAX', key:'max' },
+    { label:'AVG', key:'avg' },
+    { label:'MED', key:'med' },
   ];
 
-  const anBlocksHTML = anItems.map(item => {
-    const v = an ? an[item.key] : null;
-    const display = v !== null ? (Number.isInteger(v) ? v : v.toFixed(1)) : '—';
-    return `
-      <div class="an-block">
-        <div class="an-block-label">${item.label}</div>
-        <div class="an-block-value">${display}</div>
-      </div>`;
+  const anTableRows = anRows.map(row => {
+    const curr  = an      ? an[row.key]      : null;
+    const prior = priorAn ? priorAn[row.key] : null;
+    return `<tr>
+      <td>${row.label}</td>
+      <td>${fmt(curr)}</td>
+      <td class="an-prior">${priorAn ? fmt(prior) : '<span class=\'an-nil\'>—</span>'}</td>
+      <td class="var-cell" style="font-size:14px">${varPct(curr, prior)}</td>
+    </tr>`;
   }).join('');
+
+  const priorLabel = priorGames.length
+    ? `GM 1–${priorGames[priorGames.length-1]}`
+    : '—';
+  const currLabel = playedGames.length
+    ? `GM 1–${playedGames[playedGames.length-1]}`
+    : '—';
 
   anCard.innerHTML = `
     <div class="focused-card-hdr">
@@ -1244,7 +1559,16 @@ function renderFocusedView(container, player, games) {
       <div class="focused-card-sub">${stat.label} · Round ${selRound} · ${vals.length} game${vals.length!==1?'s':''} played</div>
     </div>
     <div class="focused-card-body">
-      <div class="an-blocks">${anBlocksHTML}</div>
+      ${buildRangeStrip(an)}
+      <table class="an-tbl">
+        <thead><tr>
+          <th></th>
+          <th>CURRENT · <span style="font-weight:400;opacity:0.65">${currLabel}</span></th>
+          <th>PRIOR · <span style="font-weight:400;opacity:0.65">${priorLabel}</span></th>
+          <th>VAR %</th>
+        </tr></thead>
+        <tbody>${anTableRows}</tbody>
+      </table>
     </div>`;
   wrap.appendChild(anCard);
 
@@ -1292,8 +1616,8 @@ function renderFocusedView(container, player, games) {
       <div class="focused-card-sub">Suggested lines · ${stat.label}</div>
     </div>
     <div class="focused-card-body">
+      ${buildGateChart(allGates)}
       <div class="gate-tiers">${tiersHTML}</div>
-      <div class="gate-note">${gateNote}</div>
     </div>`;
   wrap.appendChild(gatesCard);
 
@@ -1604,6 +1928,19 @@ function refresh() { fetchData(); }
 // ══════════════════════════════════════════════════════════
 //  EVENTS
 // ══════════════════════════════════════════════════════════
+// Flip to the opposing team
+function flipTeam() {
+  const btn    = document.getElementById('flipBtn');
+  const target = btn.dataset.target;
+  if (!target) return;
+  selTeam   = target;
+  selPlayer = 'all';
+  document.getElementById('teamSel').value = target;
+  document.getElementById('playerSel').innerHTML = '<option value="all">All Players</option>';
+  populatePlayers();
+  renderDashboard();
+}
+
 document.getElementById('roundSel').addEventListener('change', function() {
   selRound=''; selTeam=''; selPlayer='all';
   selRound = this.value;
