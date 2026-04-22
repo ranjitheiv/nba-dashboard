@@ -178,7 +178,7 @@ html, body {
 
 .team-meta-line {
   margin-top: 5px;
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 600;
   letter-spacing: 2.5px;
   text-transform: uppercase;
@@ -277,7 +277,7 @@ html, body {
   padding: 7px 4px;
   text-align: center;
   font-family: var(--font-condensed);
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
   letter-spacing: 3px;
   text-transform: uppercase;
@@ -335,6 +335,20 @@ html, body {
 
 .pos-starter { color: var(--accent); }
 .pos-bench   { color: var(--text-sub); }
+.pos-bubble {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #ffffff;
+  line-height: 1.6;
+}
+.pos-g     { background: #2563eb; }  /* Guard — blue */
+.pos-f     { background: #059669; }  /* Forward — green */
+.pos-c     { background: #d97706; }  /* Center — amber */
+.pos-other { background: #6b7280; }  /* Other — grey */
 
 /* Borders */
 .border-r  { border-right: 2px solid var(--border-hi) !important; }
@@ -369,16 +383,25 @@ html, body {
 .focused-wrap {
   display: flex;
   gap: 12px;
-  align-items: flex-start;
+  align-items: stretch;
 }
 
 .focused-card {
-  flex: 1;
+  flex: 1 1 0;
+  min-width: 0;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 8px;
   overflow: hidden;
   box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+}
+
+.focused-card-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
 }
 
 .focused-card-hdr {
@@ -403,108 +426,148 @@ html, body {
   margin-top: 2px;
 }
 
-.focused-card-body { padding: 18px; }
 
-/* Game tiles inside Stats focused card */
-.game-tiles { display: flex; flex-wrap: wrap; gap: 8px; }
 
-.game-tile {
-  flex: 1;
-  min-width: 64px;
-  max-width: 90px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 10px 8px;
-  text-align: center;
-  background: var(--bg);
+/* ── Stats table (replaces tiles) */
+.stats-tbl {
+  width: 100%;
+  border-collapse: collapse;
 }
-
-.game-tile-label {
-  font-size: 9px;
+.stats-tbl th {
+  font-family: var(--font-condensed);
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 2px;
   text-transform: uppercase;
   color: var(--text-sub);
-  margin-bottom: 6px;
+  padding: 6px 10px;
+  border-bottom: 2px solid var(--border-mid);
+  text-align: left;
 }
-
-.game-tile-value {
+.stats-tbl th:last-child { text-align: right; }
+.stats-tbl td {
   font-family: var(--font-mono);
-  font-size: 22px;
-  font-weight: 500;
+  font-size: 15px;
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--border);
   color: var(--text);
-  line-height: 1;
+  vertical-align: middle;
 }
-
-.game-tile-dnp {
-  font-size: 10px;
+.stats-tbl tr:last-child td { border-bottom: none; }
+.stats-tbl td.game-label {
+  font-family: var(--font-condensed);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-sub);
+  white-space: nowrap;
+}
+.stats-tbl td.val-cell { font-size: 18px; font-weight: 500; }
+.stats-tbl td.var-cell {
+  text-align: right;
+  font-size: 16px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.var-up   { color: #059669; }
+.var-down { color: #dc2626; }
+.var-nil  { color: var(--text-dim); }
+.stats-tbl td.dnp-cell {
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 1px;
   text-transform: uppercase;
   color: var(--text-dim);
 }
 
-/* Analysis stat blocks */
-.an-blocks { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+/* ── Analysis blocks */
+.an-blocks { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
 .an-block {
   border: 1px solid var(--border);
   border-radius: 6px;
-  padding: 12px;
+  padding: 14px 12px 12px;
   text-align: center;
   background: var(--bg);
 }
 
 .an-block-label {
-  font-size: 9px;
+  font-family: var(--font-condensed);
+  font-size: 15px;
   font-weight: 700;
-  letter-spacing: 2.5px;
+  letter-spacing: 3px;
   text-transform: uppercase;
-  color: var(--text-sub);
-  margin-bottom: 6px;
+  color: var(--text);
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--border-mid);
+  margin-bottom: 10px;
 }
 
 .an-block-value {
   font-family: var(--font-mono);
-  font-size: 28px;
-  font-weight: 500;
+  font-size: 30px;
+  font-weight: 400;
   line-height: 1;
+  color: var(--text);
 }
 
-/* Gates blocks */
-.gate-blocks { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+/* ── Gates — three tiers */
+.gate-tiers {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
 
-.gate-block {
+.gate-tier { text-align: center; }
+
+.gate-tier-label {
+  font-family: var(--font-condensed);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-sub);
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid var(--border);
+}
+
+.gate-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+.gate-box {
   border-radius: 6px;
-  padding: 16px 12px;
+  padding: 10px 8px;
   text-align: center;
+  min-height: 72px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
-.gate-block-ovr { background: #f0fdf4; border: 1px solid #bbf7d0; }
-.gate-block-und { background: #fff1f2; border: 1px solid #fecdd3; }
+.gate-box-ovr { background: #f0fdf4; border: 1px solid #bbf7d0; }
+.gate-box-und { background: #fff1f2; border: 1px solid #fecdd3; }
 
-.gate-block-label {
+.gate-box-label {
   font-size: 9px;
   font-weight: 700;
-  letter-spacing: 2.5px;
+  letter-spacing: 2px;
   text-transform: uppercase;
-  margin-bottom: 8px;
+  margin-bottom: 5px;
 }
+.gate-box-ovr .gate-box-label { color: #059669; }
+.gate-box-und .gate-box-label { color: #dc2626; }
 
-.gate-block-ovr .gate-block-label { color: #059669; }
-.gate-block-und .gate-block-label { color: #dc2626; }
-
-.gate-block-value {
+.gate-box-value {
   font-family: var(--font-mono);
-  font-size: 32px;
+  font-size: 24px;
   font-weight: 500;
   line-height: 1;
 }
-
-.gate-block-ovr .gate-block-value { color: #059669; }
-.gate-block-und .gate-block-value { color: #dc2626; }
-
-.gate-block-null { color: var(--text-dim); font-size: 18px; }
+.gate-box-ovr .gate-box-value { color: #059669; }
+.gate-box-und .gate-box-value { color: #dc2626; }
+.gate-box-null { color: var(--text-dim); font-size: 14px; }
 
 .gate-note {
   margin-top: 14px;
@@ -755,7 +818,11 @@ async function fetchData() {
       pts:    num(r.pts), fgm: num(r.fgm), fga: num(r.fga),
       tpm:    num(r.tpm), tpa: num(r.tpa), reb: num(r.reb),
       ast:    num(r.ast), stl: num(r.stl), blk: num(r.blk),
-      isDNP:  !String(r.min || '').trim(),
+      isDNP:     !String(r.min || '').trim(),
+      homeTeam:  String(r.homeTeam  || '').trim(),
+      awayTeam:  String(r.awayTeam  || '').trim(),
+      homeScore: String(r.homeScore || '').trim(),
+      awayScore: String(r.awayScore || '').trim(),
     })).filter(r => r.round && r.player);
 
     populateRounds();
@@ -887,10 +954,67 @@ function calcGates(values) {
   return { ovr: halfRound(Math.max(0,proj-buf)), und: halfRound(proj+buf) };
 }
 
-function halfRound(n) { return Math.round(n*2)/2; }
+// Three-tier gates: conservative (safer lines), moderate, aggressive (tighter lines)
+function calcAllGates(values) {
+  if (!values.length) return {
+    conservative: { ovr:null, und:null },
+    moderate:     { ovr:null, und:null },
+    aggressive:   { ovr:null, und:null }
+  };
+  const n    = values.length;
+  const mean = values.reduce((a,b)=>a+b,0)/n;
+  let proj   = mean;
+  let buf    = 5.0; // single game — wide uncertainty floor
+
+  if (n > 1) {
+    const variance = values.reduce((s,v)=>s+Math.pow(v-mean,2),0)/n;
+    const std      = Math.sqrt(variance);
+    const xMean    = (n-1)/2;
+    let num=0, den=0;
+    values.forEach((v,i)=>{ num+=(i-xMean)*(v-mean); den+=Math.pow(i-xMean,2); });
+    const slope = den>0 ? num/den : 0;
+    proj = mean + slope*0.4;
+
+    // Minimum buffer scales down as more data comes in:
+    // 2 games → floor of 4.0, 3 → 3.0, 4 → 2.0, 5+ → 1.0
+    // This stops the algorithm being falsely confident on thin data
+    const dataFloor = Math.max(1.0, 5.0 - (n - 1));
+    buf = Math.max(dataFloor, std * 0.65);
+  }
+
+  return {
+    conservative: {
+      // 2.8x — meaningfully wider, safer lines
+      ovr: halfRound(Math.max(0, proj - buf * 2.0)),
+      und: halfRound(proj + buf * 2.0)
+    },
+    moderate: {
+      // 1.4x — balanced
+      ovr: halfRound(Math.max(0, proj - buf * 1.3)),
+      und: halfRound(proj + buf * 1.3)
+    },
+    aggressive: {
+      // 0.5x — tight to projection, higher value higher risk
+      ovr: halfRound(Math.max(0, proj - buf * 0.25)),
+      und: halfRound(proj + buf * 0.25)
+    }
+  };
+}
+
+function halfRound(n) { return Math.ceil(n); }
 
 function getActiveStats() {
   return selCat === 'all' ? STATS : STATS.filter(s => s.key === selCat);
+}
+
+// Position abbreviation → coloured bubble
+function posColour(pos) {
+  const p = (pos || '').toUpperCase();
+  let cls = 'pos-other';
+  if (p === 'PG' || p === 'SG' || p === 'G') cls = 'pos-g';
+  else if (p === 'SF' || p === 'PF' || p === 'F') cls = 'pos-f';
+  else if (p === 'C') cls = 'pos-c';
+  return `<span class="pos-bubble ${cls}">${pos || '—'}</span>`;
 }
 
 // NBA team name → 3-letter abbreviation
@@ -973,7 +1097,7 @@ function renderDashboard() {
     if (!row || !row.homeScore) return null;
     const homeAbr = abbr(row.homeTeam);
     const awayAbr = abbr(row.awayTeam);
-    return `GM ${g}: <strong style="color:#15803d">${homeAbr}</strong> ${row.homeScore} - ${row.awayScore} <strong style="color:#dc2626">${awayAbr}</strong>`;
+    return `<span style="background:#374151;color:#fff;padding:2px 10px;border-radius:20px;font-size:13px;font-weight:500;white-space:nowrap;">GM ${g}: <strong style="color:#86efac">${homeAbr}</strong> ${row.homeScore} – ${row.awayScore} <strong style="color:#fca5a5">${awayAbr}</strong></span>`;
   }).filter(Boolean).join(' <span style="color:var(--border-hi);margin:0 2px">|</span> ');
 
   const metaParts = [
@@ -1006,7 +1130,7 @@ function renderDashboard() {
 function renderFocusedView(container, player, games) {
   const stat    = STATS.find(s => s.key === selCat);
   const vals    = statValues(player, stat.key);
-  const gates   = calcGates(vals);
+  const allGates = calcAllGates(vals);
   const hasData = vals.length > 0;
 
   const an = hasData ? {
@@ -1019,57 +1143,98 @@ function renderFocusedView(container, player, games) {
   const wrap = document.createElement('div');
   wrap.className = 'focused-wrap';
 
-  // ── Stats card ──
+  // ── STATS card — clean table with VAR column ──────────────
   const statsCard = document.createElement('div');
   statsCard.className = 'focused-card';
+
+  // Build table rows — always show GM 1–7, blank if no data yet
+  let prevVal = null;
+  const allGameNums = [1,2,3,4,5,6,7];
+  const tableRows = allGameNums.map(g => {
+    const gameRow = player.games[g];
+    const isDNP   = !gameRow || gameRow.isDNP;
+    const val     = (!isDNP && gameRow && gameRow[stat.key] !== null) ? gameRow[stat.key] : null;
+
+    let varPctHTML = '<span class="var-nil">—</span>';
+    let varAbsHTML = '<span class="var-nil">—</span>';
+
+    if (val !== null && prevVal !== null) {
+      // VAR +/-
+      const diff    = val - prevVal;
+      const absCls  = diff >= 0 ? 'var-up' : 'var-down';
+      const absSign = diff >= 0 ? '+' : '';
+      varAbsHTML    = `<span class="${absCls}">${absSign}${diff}</span>`;
+
+      // VAR %
+      if (prevVal !== 0) {
+        const pct  = (diff / prevVal) * 100;
+        const sign = pct >= 0 ? '↑' : '↓';
+        const cls  = pct >= 0 ? 'var-up' : 'var-down';
+        varPctHTML = `<span class="${cls}">${sign} ${Math.abs(pct).toFixed(0)}%</span>`;
+      }
+    }
+
+    let row;
+    if (!gameRow) {
+      row = `<tr style="opacity:0.3">
+        <td class="game-label">GM ${g}</td>
+        <td class="val-cell">—</td>
+        <td class="var-cell"><span class="var-nil">—</span></td>
+        <td class="var-cell"><span class="var-nil">—</span></td>
+      </tr>`;
+    } else if (isDNP || val === null) {
+      row = `<tr>
+        <td class="game-label">GM ${g}</td>
+        <td class="dnp-cell" colspan="3">DNP</td>
+      </tr>`;
+    } else {
+      row = `<tr>
+        <td class="game-label">GM ${g}</td>
+        <td class="val-cell">${val}</td>
+        <td class="var-cell">${varPctHTML}</td>
+        <td class="var-cell">${varAbsHTML}</td>
+      </tr>`;
+      prevVal = val;
+    }
+    return row;
+  }).join('');
+
   statsCard.innerHTML = `
     <div class="focused-card-hdr">
       <div class="focused-card-title">STATS</div>
       <div class="focused-card-sub">${stat.label} · ${player.name} · Round ${selRound}</div>
     </div>
     <div class="focused-card-body">
-      <div class="game-tiles" id="focusedTiles"></div>
+      <table class="stats-tbl">
+        <thead><tr>
+          <th>Game</th>
+          <th>${stat.label}</th>
+          <th style="text-align:right">VAR %</th>
+          <th style="text-align:right">VAR +/-</th>
+        </tr></thead>
+        <tbody>${tableRows}</tbody>
+      </table>
     </div>`;
   wrap.appendChild(statsCard);
 
-  // Build game tiles
-  const tilesEl = statsCard.querySelector('#focusedTiles');
-  games.forEach(g => {
-    const gameRow = player.games[g];
-    const tile = document.createElement('div');
-    tile.className = 'game-tile';
-    const isDNP = !gameRow || gameRow.isDNP;
-    const val   = (!isDNP && gameRow[stat.key] !== null) ? gameRow[stat.key] : null;
-
-    tile.innerHTML = `
-      <div class="game-tile-label">Game ${g}</div>
-      ${val !== null && val !== 0
-        ? `<div class="game-tile-value">${val}</div>`
-        : `<div class="game-tile-dnp">${isDNP ? 'DNP' : '—'}</div>`
-      }`;
-
-    if (val !== null) applyCFToEl(tile.querySelector('.game-tile-value'), stat.key, val, true);
-    tilesEl.appendChild(tile);
-  });
-
-  // ── Analysis card ──
+  // ── ANALYSIS card ─────────────────────────────────────────
   const anCard = document.createElement('div');
   anCard.className = 'focused-card';
 
-  const anRows = [
-    { key:'min', label:'MIN', cls:'#dc2626' },
-    { key:'max', label:'MAX', cls:'#059669' },
-    { key:'avg', label:'AVG', cls:''        },
-    { key:'med', label:'MED', cls:''        },
+  const anItems = [
+    { key:'min', label:'MIN' },
+    { key:'max', label:'MAX' },
+    { key:'avg', label:'AVG' },
+    { key:'med', label:'MED' },
   ];
 
-  const anBlocksHTML = anRows.map(row => {
-    const v = an ? an[row.key] : null;
+  const anBlocksHTML = anItems.map(item => {
+    const v = an ? an[item.key] : null;
     const display = v !== null ? (Number.isInteger(v) ? v : v.toFixed(1)) : '—';
     return `
       <div class="an-block">
-        <div class="an-block-label">${row.label}</div>
-        <div class="an-block-value" style="color:${row.cls || 'var(--text)'}">${display}</div>
+        <div class="an-block-label">${item.label}</div>
+        <div class="an-block-value">${display}</div>
       </div>`;
   }).join('');
 
@@ -1083,12 +1248,37 @@ function renderFocusedView(container, player, games) {
     </div>`;
   wrap.appendChild(anCard);
 
-  // ── Gates card ──
+  // ── GATES card — three tiers ──────────────────────────────
   const gatesCard = document.createElement('div');
   gatesCard.className = 'focused-card';
 
-  const ovrDisplay = gates.ovr !== null ? gates.ovr.toFixed(1) : '—';
-  const undDisplay = gates.und !== null ? gates.und.toFixed(1) : '—';
+  const tiers = [
+    { key:'conservative', label:'Conservative', desc:'Safer lines' },
+    { key:'moderate',     label:'Moderate',     desc:'Balanced'    },
+    { key:'aggressive',   label:'Aggressive',   desc:'Tighter lines'},
+  ];
+
+  const tiersHTML = tiers.map(tier => {
+    const g = allGates[tier.key];
+    const ovr = g.ovr !== null ? g.ovr : '—';
+    const und = g.und !== null ? g.und : '—';
+    const ovrNull = g.ovr === null ? 'gate-box-null' : '';
+    const undNull = g.und === null ? 'gate-box-null' : '';
+    return `
+      <div class="gate-tier">
+        <div class="gate-tier-label">${tier.label}</div>
+        <div class="gate-pair">
+          <div class="gate-box gate-box-ovr">
+            <div class="gate-box-label">Over</div>
+            <div class="gate-box-value ${ovrNull}">${ovr}</div>
+          </div>
+          <div class="gate-box gate-box-und">
+            <div class="gate-box-label">Under</div>
+            <div class="gate-box-value ${undNull}">${und}</div>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
 
   const gateNote = vals.length >= 2
     ? `Based on ${vals.length} games · trend-adjusted`
@@ -1102,16 +1292,7 @@ function renderFocusedView(container, player, games) {
       <div class="focused-card-sub">Suggested lines · ${stat.label}</div>
     </div>
     <div class="focused-card-body">
-      <div class="gate-blocks">
-        <div class="gate-block gate-block-ovr">
-          <div class="gate-block-label">Over</div>
-          <div class="gate-block-value ${gates.ovr===null?'gate-block-null':''}">${ovrDisplay}</div>
-        </div>
-        <div class="gate-block gate-block-und">
-          <div class="gate-block-label">Under</div>
-          <div class="gate-block-value ${gates.und===null?'gate-block-null':''}">${undDisplay}</div>
-        </div>
-      </div>
+      <div class="gate-tiers">${tiersHTML}</div>
       <div class="gate-note">${gateNote}</div>
     </div>`;
   wrap.appendChild(gatesCard);
@@ -1182,7 +1363,7 @@ function buildStatsTable(players, games, activeStats) {
 
     td(tr, player.jersey,  'fc fc-jersey td-jersey');
     td(tr, player.name,    'fc fc-player td-player');
-    td(tr, player.pos,     'fc fc-pos td-pos');
+    tdHTML(tr, posColour(player.pos), 'fc fc-pos td-pos');
     td(tr, am!==null ? am.toFixed(1) : '—', 'fc fc-avgmin td-min');
     td(tr, lm??'—', 'fc fc-lastmin td-min border-r');
 
