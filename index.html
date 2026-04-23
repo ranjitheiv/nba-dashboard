@@ -657,6 +657,495 @@ html, body {
 .flip-btn:hover { transform: rotate(180deg); }
 .flip-btn.visible { display: flex; }
 
+
+/* ═══ NARRATIVE BUILDER ═══════════════════════════════════ */
+.nb-btn {
+  background: #1d4ed8;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 7px 14px;
+  font-family: var(--font-condensed);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: opacity 0.15s, background 0.15s;
+  opacity: 0.35;
+  pointer-events: none;
+}
+.nb-btn.active { opacity: 1; pointer-events: auto; }
+.nb-btn.back   { background: #6b7280; opacity: 1; pointer-events: auto; }
+.nb-btn:hover  { opacity: 0.85; }
+
+.nb-page {
+  padding: 24px 28px 60px;
+  display: none;
+  flex-direction: column;
+  gap: 20px;
+}
+.nb-page.visible { display: flex; }
+
+/* ── Step cards */
+.nb-step {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.nb-step-hdr {
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.nb-step-num {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-family: var(--font-condensed);
+  font-size: 12px;
+  font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.nb-step-title {
+  font-family: var(--font-display);
+  font-size: 17px;
+  letter-spacing: 4px;
+  color: var(--text);
+}
+.nb-step-body { padding: 14px 16px; }
+
+/* ── Scenario tiles */
+.nb-scenarios {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.nb-scenario {
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 8px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  text-align: center;
+  background: var(--bg);
+}
+.nb-scenario:hover { border-color: var(--accent); }
+.nb-scenario.selected { border-color: var(--accent); background: var(--accent-lt); }
+.nb-scenario-icon { font-size: 18px; margin-bottom: 4px; }
+.nb-scenario-name {
+  font-family: var(--font-display);
+  font-size: 13px;
+  letter-spacing: 1.5px;
+  color: var(--text);
+  margin-bottom: 1px;
+  text-align:left;
+}
+.nb-scenario-desc {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  color: var(--text-sub);
+  text-transform: uppercase;
+  text-align:left;
+}
+
+/* ── Player picker */
+.nb-teams { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.nb-team-label {
+  font-family: var(--font-condensed);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-sub);
+  margin-bottom: 10px;
+}
+.nb-team-name {
+  font-family: var(--font-display);
+  font-size: 18px;
+  letter-spacing: 3px;
+  color: var(--text);
+  margin-bottom: 12px;
+}
+.nb-players { display: flex; flex-direction: column; gap: 4px; max-height: 260px; overflow-y: auto; }
+.nb-player {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: border-color 0.12s, background 0.12s;
+  background: var(--bg);
+  user-select: none;
+}
+.nb-player:hover { border-color: var(--accent); }
+.nb-player.selected { border-color: var(--accent); background: var(--accent-lt); }
+.nb-player.disabled { opacity: 0.4; pointer-events: none; }
+.nb-player-check {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  border: 2px solid var(--border-mid);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  font-size: 10px;
+  color: transparent;
+  transition: all 0.12s;
+}
+.nb-player.selected .nb-player-check {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.nb-player-name {
+  font-family: var(--font-condensed);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+.nb-player-pos {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--text-sub);
+  margin-left: auto;
+}
+.nb-select-hint {
+  font-size: 11px;
+  color: var(--text-sub);
+  margin-top: 8px;
+  letter-spacing: 0.5px;
+}
+
+/* ── Dial */
+.nb-dial-wrap {
+  display: flex;
+  gap: 0;
+  border: 1px solid var(--border-mid);
+  border-radius: 6px;
+  overflow: hidden;
+  width: fit-content;
+}
+.nb-dial-opt {
+  padding: 8px 20px;
+  font-family: var(--font-condensed);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  border: none;
+  background: var(--bg);
+  color: var(--text-sub);
+  border-right: 1px solid var(--border-mid);
+  transition: background 0.12s, color 0.12s;
+}
+.nb-dial-opt:last-child { border-right: none; }
+.nb-dial-opt.active { background: var(--accent); color: #fff; }
+
+/* ── Submit */
+.nb-submit-wrap { display: flex; align-items: center; gap: 16px; }
+.nb-submit {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 12px 28px;
+  font-family: var(--font-condensed);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.nb-submit:hover { opacity: 0.85; }
+.nb-submit-hint { font-size: 12px; color: var(--text-sub); }
+
+/* ── Output */
+.nb-output { display: flex; flex-direction: column; gap: 16px; }
+
+.nb-section-title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  letter-spacing: 5px;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.nb-section-sub {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-sub);
+  margin-bottom: 12px;
+}
+
+/* Summary table */
+.nb-summary-tbl {
+  width: auto;
+  min-width: 340px;
+  max-width: 520px;
+  margin: 0 auto;
+  border-collapse: collapse;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.nb-summary-tbl th {
+  background: var(--card);
+  padding: 12px 20px;
+  font-family: var(--font-condensed);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text);
+  text-align: center;
+  border-bottom: 2px solid var(--border-mid);
+}
+.nb-summary-tbl th:first-child { text-align: left; }
+.nb-summary-tbl td {
+  padding: 11px 20px;
+  border-bottom: 1px solid var(--border);
+  text-align: center;
+  font-family: var(--font-condensed);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-sub);
+}
+.nb-summary-tbl td:first-child { text-align: left; letter-spacing: 1px; text-transform: uppercase; }
+.nb-summary-tbl tr:last-child td { border-bottom: none; }
+
+/* Prediction pills */
+.pill {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+.pill-over   { background: #059669; color: #fff; }
+.pill-under  { background: #dc2626; color: #fff; }
+.pill-normal { background: #9ca3af; color: #fff; }
+
+/* Score anchor */
+.nb-score-anchor {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  background: #1e293b;
+  color: #fff;
+  border-radius: 8px;
+  padding: 14px 20px;
+  font-family: var(--font-mono);
+  font-size: 14px;
+}
+.nb-anchor-team { display: flex; flex-direction: column; align-items: center; gap: 2px; flex: 1; }
+.nb-anchor-name { font-family: var(--font-condensed); font-size: 11px; letter-spacing: 2px; color: #94a3b8; font-weight: 700; }
+.nb-anchor-score { font-size: 28px; font-weight: 500; }
+.nb-anchor-sep { font-size: 18px; color: #475569; }
+.nb-anchor-label { font-family: var(--font-condensed); font-size: 10px; letter-spacing: 2px; color: #64748b; text-align: center; margin-top: 2px; }
+
+/* Toggle */
+.nb-toggle {
+  display: flex;
+  gap: 0;
+  border: 1px solid var(--border-mid);
+  border-radius: 6px;
+  overflow: hidden;
+  width: fit-content;
+  margin-bottom: 16px;
+}
+.nb-toggle-opt {
+  padding: 7px 18px;
+  font-family: var(--font-condensed);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  border: none;
+  background: var(--bg);
+  color: var(--text-sub);
+  border-right: 1px solid var(--border-mid);
+  transition: background 0.12s, color 0.12s;
+}
+.nb-toggle-opt:last-child { border-right: none; }
+.nb-toggle-opt.active { background: var(--accent); color: #fff; }
+
+/* Player projections table */
+.nb-proj-tbl {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.nb-proj-tbl th {
+  background: var(--card);
+  padding: 8px 10px;
+  font-family: var(--font-condensed);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-sub);
+  text-align: center;
+  border-bottom: 2px solid var(--border-mid);
+  white-space: nowrap;
+}
+.nb-proj-tbl th:first-child { text-align: left; min-width: 160px; }
+.nb-proj-tbl td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  text-align: center;
+  vertical-align: middle;
+}
+.nb-proj-tbl tr:last-child td { border-bottom: none; }
+.nb-proj-tbl tr.nb-total-row td {
+  border-top: 2px solid var(--border-mid);
+  background: var(--card);
+  font-weight: 700;
+  border-bottom: none;
+}
+.nb-player-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.nb-star-badge {
+  font-size: 10px;
+  background: #fef3c7;
+  border: 1px solid #fde68a;
+  border-radius: 20px;
+  padding: 1px 6px;
+  color: #d97706;
+  font-weight: 700;
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+.nb-proj-cell {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+.nb-bubble {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+.nb-bubble-o { background: #059669; }
+.nb-bubble-u { background: #dc2626; }
+.nb-bubble-n { background: #9ca3af; color: #fff; }
+.nb-proj-val {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1;
+}
+.nb-proj-avg {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-sub);
+  line-height: 1;
+}
+
+
+
+/* ── Three-panel summary layout */
+.nb-summary-3col {
+  display: grid;
+  grid-template-columns: 200px 1.6fr 1fr 1fr;
+  gap: 10px;
+  align-items: stretch;
+}
+.nb-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+}
+.nb-panel-hdr {
+  background: var(--card);
+  border-bottom: 2px solid var(--border-mid);
+  padding: 8px 14px;
+  font-family: var(--font-condensed);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-sub);
+  flex-shrink: 0;
+}
+.nb-score-panel {
+  background: #1e293b;
+  border-radius: 8px;
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+.nb-score-panel-team { font-size: 16px; letter-spacing: 1px; color: #cbd5e1; text-align: center; font-weight: 600; }
+.nb-score-panel-num  { font-size: 52px; font-weight: 500; color: #fff; line-height: 1; }
+.nb-score-panel-vs   { font-size: 13px; color: #475569; margin: 10px 0; letter-spacing: 2px; }
+.nb-score-panel-label{ font-size: 10px; letter-spacing: 2px; color: #64748b; text-align: center; margin-top: 10px; font-weight: 500; }
+
+/* SGM legs */
+.nb-legs-body { padding: 0 14px; overflow: hidden; }
+.nb-leg {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+.nb-leg:last-child { border-bottom: none; }
+.nb-leg-bubble {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px; font-weight: 700;
+  flex-shrink: 0;
+}
+.nb-leg-o { background: #d1fae5; color: #065f46; }
+.nb-leg-u { background: #fee2e2; color: #7f1d1d; }
+.nb-leg-info { flex: 1; min-width: 0; }
+.nb-leg-player { font-family: var(--font-condensed); font-size: 12px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nb-leg-team   { font-size: 10px; color: var(--text-sub); letter-spacing: 0.5px; }
+.nb-leg-cat    { font-family: var(--font-condensed); font-size: 13px; font-weight: 500; color: var(--text); text-align:center; flex-shrink:0; width:40px; }
+.nb-leg-nums   { text-align: right; flex-shrink: 0; }
+.nb-leg-proj   { font-family: var(--font-mono); font-size: 13px; color: var(--text); }
+.nb-leg-avg    { font-family: var(--font-mono); font-size: 10px; color: var(--text-sub); }
+
 /* ─── LOCK SCREEN ────────────────────────────────────────── */
 #lockScreen {
   position: fixed;
@@ -816,8 +1305,14 @@ html, body {
   </svg>
 </button>
   </div>
-  <div class="team-meta-line" id="teamMeta"></div>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-top:4px;">
+    <div class="team-meta-line" id="teamMeta"></div>
+    <button class="nb-btn" id="nbBtn" onclick="openNarrativeBuilder()" style="flex-shrink:0;margin-left:16px;">🏀 Narrative Builder</button>
+  </div>
 </div>
+
+<!-- NARRATIVE BUILDER PAGE -->
+<div class="nb-page" id="nbPage"></div>
 
 <!-- MAIN -->
 <div class="content" id="mainContent">
@@ -1217,6 +1712,7 @@ function renderDashboard() {
     main.appendChild(makeSection('ANALYSIS', 'Min · Max · Avg · Median per round', buildAnalysisTable(players, games, activeStats)));
     main.appendChild(makeSection('GATES',    'Suggested over / under lines',       buildGatesTable(players, games, activeStats)));
   }
+  updateNbBtn();
 }
 
 
@@ -1948,6 +2444,7 @@ document.getElementById('roundSel').addEventListener('change', function() {
   document.getElementById('playerSel').innerHTML='<option value="all">All Players</option>';
   populateTeams(selRound);
   renderDashboard();
+  updateNbBtn();
 });
 
 document.getElementById('teamSel').addEventListener('change', function() {
@@ -1967,6 +2464,817 @@ document.getElementById('playerSel').addEventListener('change', function() {
   selPlayer = this.value;
   renderDashboard();
 });
+
+
+// ══════════════════════════════════════════════════════════
+//  NARRATIVE BUILDER
+// ══════════════════════════════════════════════════════════
+
+let nbScenario   = null;
+let nbDial       = 'moderate';
+let nbHomePicks  = [];  // player names
+let nbAwayPicks  = [];
+let nbHomeTeam   = '';
+let nbAwayTeam   = '';
+let nbViewTeam   = 'home'; // toggle
+
+const SCENARIOS = [
+  { id:'blowA', icon:'💥', name:'BLOWOUT', desc:'Home Team Dominates', side:'home' },
+  { id:'blowB', icon:'💥', name:'BLOWOUT', desc:'Away Team Dominates', side:'away' },
+  { id:'grind', icon:'🔒', name:'GRIND',   desc:'Close Defensive Game', side:'both' },
+  { id:'shoot', icon:'🔥', name:'SHOOTOUT',desc:'Close High-Scoring Game', side:'both' },
+];
+
+// Base narrative multipliers per scenario [winTeam, loseTeam] or [teamA, teamA] for both
+// Format: { stat: [winner_mult, loser_mult] } — for grind/shoot both teams get same
+const NARRATIVE_MATRIX = {
+  blowA: {
+    pts: [1.15,  0.85],
+    fga: [1.12,  0.90],
+    tpm: [1.20,  0.83],
+    tpa: [1.20,  0.88],
+    reb: [1.15,  0.85],
+    ast: [0.87,  0.85],
+    stl: [1.20,  0.85],
+    blk: [1.15,  0.90],
+  },
+  blowB: {
+    pts: [0.85,  1.15],
+    fga: [0.90,  1.12],
+    tpm: [0.83,  1.20],
+    tpa: [0.88,  1.20],
+    reb: [0.85,  1.15],
+    ast: [0.85,  0.87],
+    stl: [0.85,  1.20],
+    blk: [0.90,  1.15],
+  },
+  grind: {
+    pts: [0.85,  0.85],
+    fga: [0.92,  0.92],
+    tpm: [0.80,  0.80],
+    tpa: [0.95,  0.95],
+    reb: [1.15,  1.15],
+    ast: [0.85,  0.85],
+    stl: [1.12,  1.12],
+    blk: [1.15,  1.15],
+  },
+  shoot: {
+    pts: [1.18,  1.18],
+    fga: [1.10,  1.10],
+    tpm: [1.20,  1.20],
+    tpa: [1.15,  1.15],
+    reb: [0.85,  0.85],
+    ast: [1.15,  1.15],
+    stl: [0.85,  0.85],
+    blk: [0.85,  0.85],
+  },
+};
+
+// Dial intensity scaling — multiplier is lerped toward 1.0 (conservative) or amplified (aggressive)
+const DIAL_SCALE = { conservative: 0.7, moderate: 1.0, aggressive: 1.5 };
+
+// STL/BLK floors and ceilings per game
+const STL_FLOOR=0, STL_CEIL=4, BLK_FLOOR=0, BLK_CEIL=4;
+
+// Star player boost on top of narrative (applied to picks only)
+const STAR_BOOST = { pts:1.20, fga:1.15, tpm:'tpa_check', tpa:'tpa_check', ast:0.85 };
+const STAR_BOOST_HIGH_TPA = { tpm:1.25, tpa:1.25 };
+const STAR_BOOST_LOW_TPA  = { tpm:1.05, tpa:1.05 };
+const TPA_THRESHOLD = 3; // avg TPA per game to be considered a 3PT shooter
+
+function applyDial(baseMult, dial) {
+  const scale = DIAL_SCALE[dial];
+  // Scale the delta from 1.0 by the dial factor
+  return 1.0 + (baseMult - 1.0) * scale;
+}
+
+function pillDir(mult) {
+  if (mult >= 1.06) return 'over';
+  if (mult <= 0.94) return 'under';
+  return 'normal';
+}
+
+function getPlayerAvg(playerData, statKey) {
+  const vals = statValues(playerData, statKey);
+  if (!vals.length) return 0;
+  return vals.reduce((a,b)=>a+b,0)/vals.length;
+}
+
+function projectStat(avg, mult, statKey) {
+  let proj = avg * mult;
+  if (statKey === 'stl') proj = Math.min(STL_CEIL, Math.max(STL_FLOOR, proj));
+  if (statKey === 'blk') proj = Math.min(BLK_CEIL, Math.max(BLK_FLOOR, proj));
+  return Math.round(proj);
+}
+
+// Get home and away teams for the current round/team selection
+function getNbTeams() {
+  const row = allRows.find(r => r.round==selRound && r.team===selTeam && r.homeTeam);
+  return row ? { home: row.homeTeam, away: row.awayTeam } : { home:'', away:'' };
+}
+
+// Get all players for a team in this round
+function getTeamPlayers(teamName) {
+  const players = buildPlayerList(selRound, teamName);
+  // Sort by average PTS in this round, highest first
+  return players.sort((a, b) => {
+    const avgA = getPlayerAvg(a, 'pts');
+    const avgB = getPlayerAvg(b, 'pts');
+    return avgB - avgA;
+  });
+}
+
+// Get game score history for this matchup
+function getScoreHistory() {
+  const rows = allRows.filter(r => r.round==selRound && r.homeTeam && r.homeScore);
+  // Deduplicate by game number
+  const seen = {};
+  const games = [];
+  rows.forEach(r => {
+    if (!seen[r.game]) {
+      seen[r.game] = true;
+      games.push({ game:r.game, homeScore:Number(r.homeScore)||0, awayScore:Number(r.awayScore)||0 });
+    }
+  });
+  return games.sort((a,b)=>a.game-b.game);
+}
+
+function calcAnchorScores(scenario, dial) {
+  const history = getScoreHistory();
+  let baseHome = 108, baseAway = 108; // NBA averages as fallback
+
+  if (history.length) {
+    baseHome = Math.round(history.reduce((s,g)=>s+g.homeScore,0)/history.length);
+    baseAway = Math.round(history.reduce((s,g)=>s+g.awayScore,0)/history.length);
+  }
+
+  const scale = DIAL_SCALE[dial];
+  let homeProj = baseHome, awayProj = baseAway;
+
+  if (scenario === 'blowA') {
+    const delta = Math.round(15 * scale);
+    homeProj = baseHome + delta;
+    awayProj = baseAway - delta;
+  } else if (scenario === 'blowB') {
+    const delta = Math.round(15 * scale);
+    homeProj = baseHome - delta;
+    awayProj = baseAway + delta;
+  } else if (scenario === 'grind') {
+    const delta = Math.round(10 * scale);
+    homeProj = baseHome - delta;
+    awayProj = baseAway - delta;
+  } else if (scenario === 'shoot') {
+    const delta = Math.round(10 * scale);
+    homeProj = baseHome + delta;
+    awayProj = baseAway + delta;
+  }
+
+  return { home: homeProj, away: awayProj };
+}
+
+
+// ── Build ranked SGM legs ─────────────────────────────────
+function buildSGMLegs(maxLegs) {
+  const matrix   = NARRATIVE_MATRIX[nbScenario];
+  const STATS_KEYS = ['pts','fga','tpm','tpa','reb','ast','stl','blk'];
+  const STATS_LABELS = { pts:'PTS', fga:'FGA', tpm:'TPM', tpa:'TPA', reb:'REB', ast:'AST', stl:'STL', blk:'BLK' };
+  const legs = [];
+
+  [[nbHomeTeam, 0, nbHomePicks], [nbAwayTeam, 1, nbAwayPicks]].forEach(([teamName, matrixIdx, picks]) => {
+    const players = getTeamPlayers(teamName);
+    const teamAbbr = abbr(teamName);
+
+    players.forEach(player => {
+      const isStar  = picks.includes(player.name);
+      const avgTpa  = getPlayerAvg(player, 'tpa');
+
+      STATS_KEYS.forEach(key => {
+        const avg = getPlayerAvg(player, key);
+        if (avg === 0 && !['stl','blk'].includes(key)) return;
+
+        let mult = applyDial(matrix[key][matrixIdx], nbDial);
+        if (isStar) {
+          if (key === 'pts') mult *= 1.20;
+          else if (key === 'fga') mult *= 1.15;
+          else if (key === 'ast') mult *= 0.85;
+          else if (key === 'tpm' || key === 'tpa') mult *= avgTpa >= TPA_THRESHOLD ? 1.25 : 1.05;
+        }
+
+        const dir   = pillDir(mult);
+        if (dir === 'normal') return; // skip normal — only extremes make good legs
+        const proj  = projectStat(avg, mult, key);
+        const delta = Math.abs(mult - 1.0); // how far from normal — used for ranking
+
+        legs.push({ player: player.name, team: teamAbbr, stat: STATS_LABELS[key], dir, proj, avg: avg.toFixed(1), delta });
+      });
+    });
+  });
+
+  // Sort by delta descending (most extreme first), then return top N
+  legs.sort((a,b) => b.delta - a.delta);
+  return legs.slice(0, maxLegs);
+}
+
+function renderSGMLegs(legs) {
+  if (!legs.length) return '<div style="padding:14px;font-size:12px;color:var(--text-sub)">No strong legs found.</div>';
+  return '<div class="nb-legs-body">' + legs.map(leg => `
+    <div class="nb-leg">
+      <div class="nb-leg-bubble nb-leg-${leg.dir[0]}">${leg.dir[0].toUpperCase()}</div>
+      <div class="nb-leg-info">
+        <div class="nb-leg-player">${leg.player}</div>
+        <div class="nb-leg-team">${leg.team}</div>
+      </div>
+      <div class="nb-leg-cat">${leg.stat}</div>
+      <div class="nb-leg-nums">
+        <div class="nb-leg-proj">${leg.proj}</div>
+        <div class="nb-leg-avg">(${leg.avg})</div>
+      </div>
+    </div>`).join('') + '</div>';
+}
+
+// ── Open narrative builder ────────────────────────────────
+function openNarrativeBuilder() {
+  const teams = getNbTeams();
+  nbHomeTeam  = teams.home;
+  nbAwayTeam  = teams.away;
+  nbScenario  = null;
+  nbDial      = 'moderate';
+  nbHomePicks = [];
+  nbAwayPicks = [];
+  nbViewTeam  = 'home';
+
+  // Hide stat tracker
+  document.getElementById('teamBanner').style.display = 'none';
+  document.getElementById('mainContent').style.display = 'none';
+  document.getElementById('nbPage').classList.add('visible');
+
+  // Swap button
+  document.getElementById('nbBtn').textContent = '← Stat Tracker';
+  document.getElementById('nbBtn').classList.add('back');
+  document.getElementById('nbBtn').onclick = closeNarrativeBuilder;
+
+  renderNbPage();
+}
+
+function closeNarrativeBuilder() {
+  document.getElementById('nbPage').classList.remove('visible');
+  document.getElementById('mainContent').style.display = '';
+  document.getElementById('teamBanner').style.display = 'block';
+
+  const btn = document.getElementById('nbBtn');
+  btn.textContent = '🏀 Narrative Builder';
+  btn.classList.remove('back');
+  btn.onclick = openNarrativeBuilder;
+
+  renderDashboard();
+}
+
+// ── Render nb page ────────────────────────────────────────
+function renderNbPage() {
+  const home  = nbHomeTeam || 'Home Team';
+  const away  = nbAwayTeam || 'Away Team';
+  const homeF = home.split(' ')[0];
+  const awayF = away.split(' ')[0];
+
+  const homeAbbrNb = abbr(home);
+  const awayAbbrNb = abbr(away);
+  const scenarios = [
+    { id:'blowA', icon:'💥', name:`${homeAbbrNb} Blowout`, desc:'Home team dominates' },
+    { id:'blowB', icon:'💥', name:`${awayAbbrNb} Blowout`, desc:'Away team dominates' },
+    { id:'grind', icon:'🔒', name:'Grind',                 desc:'Close defensive game' },
+    { id:'shoot', icon:'🔥', name:'Shootout',              desc:'Close high-scoring game' },
+  ];
+
+  const scenarioHTML = scenarios.map(s => `
+    <div class="nb-scenario ${nbScenario===s.id?'selected':''}" onclick="pickScenario('${s.id}')">
+      <div style="display:flex;align-items:center;gap:8px;justify-content:center;">
+        <span style="font-size:14px">${s.icon}</span>
+        <div>
+          <div class="nb-scenario-name">${s.name}</div>
+          <div class="nb-scenario-desc">${s.desc}</div>
+        </div>
+      </div>
+    </div>`).join('');
+
+  // Players for each team
+  const homePlayers = getTeamPlayers(nbHomeTeam);
+  const awayPlayers = getTeamPlayers(nbAwayTeam);
+
+  const playerListHTML = (players, teamSide) => players.map(p => {
+    const picks = teamSide === 'home' ? nbHomePicks : nbAwayPicks;
+    const limit = teamSide === 'home' ? nbHomePicks.length : nbAwayPicks.length;
+    const isSel = picks.includes(p.name);
+    const isDisabled = !isSel && limit >= 3;
+    return `
+      <div class="nb-player ${isSel?'selected':''} ${isDisabled?'disabled':''}"
+           onclick="togglePick('${teamSide}','${p.name.replace(/'/g,"\'")}')">
+        <div class="nb-player-check">✓</div>
+        <div class="nb-player-name">${p.name}</div>
+        <div class="nb-player-pos">${p.pos||''}</div>
+      </div>`;
+  }).join('');
+
+  const dialHTML = ['conservative','moderate','aggressive'].map(d =>
+    `<button class="nb-dial-opt ${nbDial===d?'active':''}" onclick="setDial('${d}')">${d}</button>`
+  ).join('');
+
+  const canSubmit = nbScenario !== null;
+
+  document.getElementById('nbPage').innerHTML = `
+    <div style="padding-bottom:4px;">
+      <div style="font-family:var(--font-display);font-size:32px;letter-spacing:4px;color:var(--text)">NARRATIVE BUILDER</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:4px;">
+        <div style="font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--text-sub);">${home} vs. ${away} · Round ${selRound}</div>
+        <button onclick="closeNarrativeBuilder()" style="display:flex;align-items:center;gap:7px;background:#ef4444;color:#fff;border:none;border-radius:6px;padding:7px 14px;font-family:var(--font-condensed);font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;flex-shrink:0;margin-left:16px;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+          Stat Tracker
+        </button>
+      </div>
+    </div>
+
+    <!-- Step 1: Scenario -->
+    <div class="nb-step">
+      <div class="nb-step-hdr">
+        <div class="nb-step-num">1</div>
+        <div class="nb-step-title">SELECT NARRATIVE</div>
+      </div>
+      <div class="nb-step-body">
+        <div class="nb-scenarios">${scenarioHTML}</div>
+      </div>
+    </div>
+
+    <!-- Step 2: Players -->
+    <div class="nb-step">
+      <div class="nb-step-hdr">
+        <div class="nb-step-num">2</div>
+        <div class="nb-step-title">PICK KEY PLAYERS</div>
+      </div>
+      <div class="nb-step-body">
+        <div class="nb-teams">
+          <div>
+            <div class="nb-team-label">Home Team</div>
+            <div class="nb-team-name">${home}</div>
+            <div class="nb-players">${playerListHTML(homePlayers,'home')}</div>
+            <div class="nb-select-hint">${nbHomePicks.length}/3 selected — players you expect to have big games</div>
+          </div>
+          <div>
+            <div class="nb-team-label">Away Team</div>
+            <div class="nb-team-name">${away}</div>
+            <div class="nb-players">${playerListHTML(awayPlayers,'away')}</div>
+            <div class="nb-select-hint">${nbAwayPicks.length}/3 selected — players you expect to have big games</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3: Dial (inline in header) -->
+    <div class="nb-step">
+      <div class="nb-step-hdr" style="justify-content:space-between;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="nb-step-num">3</div>
+          <div class="nb-step-title">SET INTENSITY</div>
+        </div>
+        <div class="nb-dial-wrap" style="margin:0;">${dialHTML}</div>
+      </div>
+    </div>
+
+    <!-- Submit -->
+    <div class="nb-submit-wrap">
+      <button class="nb-submit" onclick="submitNarrative()" ${canSubmit?'':'disabled'} style="${canSubmit?'':'opacity:0.4;pointer-events:none'}">Build Narrative →</button>
+      ${!canSubmit?'<span class="nb-submit-hint">Select a narrative to continue</span>':''}
+    </div>
+
+    <!-- Output -->
+    <div class="nb-output" id="nbOutput"></div>
+  `;
+}
+
+function pickScenario(id) {
+  nbScenario = id;
+  renderNbPage();
+  // Scroll to player picker after selecting scenario
+  setTimeout(() => {
+    const el = document.querySelectorAll('.nb-step')[1];
+    if (el) el.scrollIntoView({ behavior:'smooth', block:'start' });
+  }, 100);
+}
+
+function togglePick(side, name) {
+  const arr = side === 'home' ? nbHomePicks : nbAwayPicks;
+  const idx = arr.indexOf(name);
+  if (idx > -1) arr.splice(idx, 1);
+  else if (arr.length < 3) arr.push(name);
+  renderNbPage();
+  // Restore scroll
+  const out = document.getElementById('nbOutput');
+  if (out && out.innerHTML) out.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+function setDial(d) {
+  nbDial = d;
+  renderNbPage();
+}
+
+function setDialAndRefresh(d) {
+  nbDial = d;
+  // Update step 3 dial buttons
+  document.querySelectorAll('.nb-dial-opt').forEach(b => {
+    b.classList.toggle('active', b.textContent.toLowerCase() === d);
+  });
+  // Rebuild output
+  submitNarrative();
+}
+
+// ── Build the output ──────────────────────────────────────
+function submitNarrative() {
+  const matrix  = NARRATIVE_MATRIX[nbScenario];
+  const anchor  = calcAnchorScores(nbScenario, nbDial);
+  const STATS_KEYS = ['pts','fga','tpm','tpa','reb','ast','stl','blk'];
+  const STATS_LABELS = { pts:'PTS', fga:'FGA', tpm:'TPM', tpa:'TPA', reb:'REB', ast:'AST', stl:'STL', blk:'BLK' };
+
+  // ── Summary table ─────────────────────────────────────
+  const summaryRows = STATS_KEYS.map(key => {
+    const [hm, am] = matrix[key];
+    const hd = applyDial(hm, nbDial);
+    const ad = applyDial(am, nbDial);
+    const hDir = pillDir(hd);
+    const aDir = pillDir(ad);
+    return `<tr>
+      <td style="text-align:right"><span class="pill pill-${hDir}">${hDir}</span></td>
+      <td style="text-align:center;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-sub);font-size:12px">${STATS_LABELS[key]}</td>
+      <td style="text-align:left"><span class="pill pill-${aDir}">${aDir}</span></td>
+    </tr>`;
+  }).join('');
+
+  const homeNameShort = nbHomeTeam.split(' ').slice(-1)[0].toUpperCase();
+  const awayNameShort = nbAwayTeam.split(' ').slice(-1)[0].toUpperCase();
+
+  // ── Score anchor ──────────────────────────────────────
+  const anchorHTML = `
+    <div class="nb-score-anchor">
+      <div class="nb-anchor-team">
+        <div class="nb-anchor-name">${nbHomeTeam}</div>
+        <div class="nb-anchor-score">${anchor.home}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center">
+        <div class="nb-anchor-sep">vs</div>
+        <div class="nb-anchor-label">PROJECTED SCORE</div>
+      </div>
+      <div class="nb-anchor-team">
+        <div class="nb-anchor-name">${nbAwayTeam}</div>
+        <div class="nb-anchor-score">${anchor.away}</div>
+      </div>
+    </div>`;
+
+  // ── Player projections ────────────────────────────────
+  function buildProjTable(teamName, teamSide, picks, matrixIdx) {
+    const players = getTeamPlayers(teamName);
+    let totalPts = 0, totalPtsProj = 0;
+
+    const rows = players.map(player => {
+      const isStar = picks.includes(player.name);
+      const avgTpa = getPlayerAvg(player, 'tpa');
+
+      const cells = STATS_KEYS.map(key => {
+        const avg = getPlayerAvg(player, key);
+        if (avg === 0 && !['stl','blk'].includes(key)) {
+          return `<td><div class="nb-proj-cell"><div class="nb-bubble nb-bubble-n">N</div><div class="nb-proj-val">—</div></div></td>`;
+        }
+
+        // Get narrative multiplier
+        let mult = applyDial(matrix[key][matrixIdx], nbDial);
+
+        // Apply star boost on top
+        if (isStar) {
+          if (key === 'pts') mult *= 1.20;
+          else if (key === 'fga') mult *= 1.15;
+          else if (key === 'ast') mult *= 0.85;
+          else if (key === 'tpm' || key === 'tpa') {
+            mult *= avgTpa >= TPA_THRESHOLD ? 1.25 : 1.05;
+          }
+        }
+
+        const proj = projectStat(avg, mult, key);
+        const dir  = pillDir(mult);
+
+        if (key === 'pts') {
+          if (avg > 0) totalPts += avg;
+          totalPtsProj += proj;
+        }
+
+        const avgFmt = Number.isInteger(avg) ? avg : avg.toFixed(1);
+        return `<td>
+          <div class="nb-proj-cell">
+            <div class="nb-bubble nb-bubble-${dir[0]}">${dir[0].toUpperCase()}</div>
+            <div class="nb-proj-val">${proj}</div>
+            <div class="nb-proj-avg">(${avgFmt})</div>
+          </div>
+        </td>`;
+      }).join('');
+
+      const starBadge = isStar ? '<span class="nb-star-badge">★ KEY</span>' : '';
+      return `<tr>
+        <td><div class="nb-player-cell"><span style="font-family:var(--font-condensed);font-size:13px;font-weight:700;color:var(--text)">${player.name}</span>${starBadge}</div></td>
+        ${cells}
+      </tr>`;
+    }).join('');
+
+    const totalRow = `<tr class="nb-total-row">
+      <td style="font-family:var(--font-condensed);font-size:12px;letter-spacing:1px;text-transform:uppercase;color:var(--text-sub)">TOTAL PTS</td>
+      <td colspan="${STATS_KEYS.length}" style="text-align:left;font-family:var(--font-mono);font-size:14px;color:var(--text)">
+        <span style="font-size:20px;font-weight:500">${totalPtsProj}</span>
+        <span style="font-size:12px;color:var(--text-sub);margin-left:8px">vs projected ${anchor[teamSide === 0 ? 'home':'away']} · avg sum ${Math.round(totalPts)}</span>
+      </td>
+    </tr>`;
+
+    const headers = STATS_KEYS.map(k => `<th>${STATS_LABELS[k]}</th>`).join('');
+    return `
+      <table class="nb-proj-tbl">
+        <thead><tr>
+          <th>Player</th>
+          ${headers}
+        </tr></thead>
+        <tbody>${rows}${totalRow}</tbody>
+      </table>`;
+  }
+
+  // Toggle between home/away
+  const toggleHTML = `
+    <div class="nb-toggle" id="nbToggle">
+      <button class="nb-toggle-opt ${nbViewTeam==='home'?'active':''}" onclick="setNbView('home')">${nbHomeTeam}</button>
+      <button class="nb-toggle-opt ${nbViewTeam==='away'?'active':''}" onclick="setNbView('away')">${nbAwayTeam}</button>
+    </div>`;
+
+  const projTable = nbViewTeam === 'home'
+    ? buildProjTable(nbHomeTeam, 0, nbHomePicks, 0)
+    : buildProjTable(nbAwayTeam, 1, nbAwayPicks, 1);
+
+  const scenarioNames = {
+    blowA: `${abbr(nbHomeTeam)} Blowout`,
+    blowB: `${abbr(nbAwayTeam)} Blowout`,
+    grind: 'Grind',
+    shoot: 'Shootout',
+  };
+
+  document.getElementById('nbOutput').innerHTML = `
+    <div style="border-top:2px solid var(--border-mid);padding-top:20px;">
+      <div class="nb-section-title">NARRATIVE: ${scenarioNames[nbScenario].toUpperCase()}</div>
+      <div class="nb-section-sub">Intensity: ${nbDial} · Round ${selRound}</div>
+
+      <div style="margin-top:20px;margin-bottom:10px">
+        <div class="nb-section-title" style="font-size:16px">TEAM SUMMARY</div>
+      </div>
+      <div class="nb-summary-3col">
+
+        <!-- Score panel -->
+        <div class="nb-score-panel">
+          <div class="nb-score-panel-team">${nbHomeTeam}</div>
+          <div class="nb-score-panel-num">${anchor.home}</div>
+          <div class="nb-score-panel-vs">vs</div>
+          <div class="nb-score-panel-team">${nbAwayTeam}</div>
+          <div class="nb-score-panel-num">${anchor.away}</div>
+          <div class="nb-score-panel-label">Projected score</div>
+        </div>
+
+        <!-- Summary table panel -->
+        <div class="nb-panel">
+          <div class="nb-panel-hdr">Over / Under by category</div>
+          <div style="flex:1;padding-top:4px;">
+            <table class="nb-summary-tbl" style="width:100%;border-radius:0;border:none;box-shadow:none;table-layout:fixed;">
+              <thead><tr>
+                <th style="text-align:right">${nbHomeTeam.split(' ').pop()}</th>
+                <th style="text-align:center">Stat</th>
+                <th style="text-align:left">${nbAwayTeam.split(' ').pop()}</th>
+              </tr></thead>
+              <tbody>${summaryRows}</tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- SGM Legs panel -->
+        <div class="nb-panel" id="nbLegsPanel">
+          <div class="nb-panel-hdr">Top SGM legs</div>
+          <div id="nbLegsBody"></div>
+        </div>
+
+        <!-- Radar panel -->
+        <div class="nb-panel" id="nbRadarPanel">
+          <div class="nb-panel-hdr">Narrative intensity</div>
+          <div class="nb-panel-legend" id="nbRadarLegend" style="display:flex;gap:12px;padding:8px 14px 0;font-size:10px;color:var(--text-sub);"></div>
+          <div style="flex:1;padding:8px 14px 14px;position:relative;">
+            <canvas id="nbRadarChart" role="img" aria-label="Radar chart showing narrative intensity across stat categories for both teams">Narrative intensity across PTS, FGA, TPM, TPA, REB, AST, STL, BLK.</canvas>
+          </div>
+        </div>
+
+      </div>
+
+      <div style="margin-top:20px;margin-bottom:10px">
+        <div class="nb-section-title" style="font-size:16px">PLAYER PROJECTIONS</div>
+      </div>
+      <div style="font-family:var(--font-mono);font-size:10px;color:var(--text-dim);margin-bottom:6px;text-align:right;letter-spacing:0.5px">Numbers in ( ) show series average</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        ${toggleHTML}
+        <div class="nb-dial-wrap" id="nbDialInline">
+          ${['conservative','moderate','aggressive'].map(d => `<button class="nb-dial-opt ${nbDial===d?'active':''}" onclick="setDialAndRefresh('${d}')">${d.charAt(0).toUpperCase()+d.slice(1)}</button>`).join('')}
+        </div>
+      </div>
+      <div id="nbProjWrap">${projTable}</div>
+    </div>
+  `;
+
+  // Scroll to output, then size SGM legs to match summary table
+  setTimeout(() => {
+    document.getElementById('nbOutput').scrollIntoView({ behavior:'smooth', block:'start' });
+    sizeSGMLegs();
+  }, 120);
+}
+
+function sizeSGMLegs() {
+  const legsPanel = document.getElementById('nbLegsPanel');
+  const legsBody  = document.getElementById('nbLegsBody');
+  if (!legsPanel || !legsBody) return;
+
+  const summaryPanel = legsPanel.closest('.nb-summary-3col')?.children[1];
+  const refH   = summaryPanel ? summaryPanel.offsetHeight : legsPanel.offsetHeight;
+  const hdrH   = legsPanel.querySelector('.nb-panel-hdr').offsetHeight;
+  const rowH   = 46;
+  const maxLegs = Math.max(1, Math.floor((refH - hdrH) / rowH));
+
+  const legs = buildSGMLegs(maxLegs);
+  legsBody.innerHTML = renderSGMLegs(legs);
+
+  // Draw radar chart
+  drawNarrativeRadar();
+}
+
+function drawNarrativeRadar() {
+  const canvas = document.getElementById('nbRadarChart');
+  if (!canvas) return;
+
+  // Size canvas to fill its container
+  const wrap = canvas.parentElement;
+  canvas.style.width  = '100%';
+  canvas.style.height = '100%';
+
+  const matrix   = NARRATIVE_MATRIX[nbScenario];
+  const KEYS     = ['pts','fga','tpm','tpa','reb','ast','stl','blk'];
+  const LABELS   = ['PTS','FGA','TPM','TPA','REB','AST','STL','BLK'];
+
+  const homeData = KEYS.map(k => +(applyDial(matrix[k][0], nbDial).toFixed(2)));
+  const awayData = KEYS.map(k => +(applyDial(matrix[k][1], nbDial).toFixed(2)));
+
+  // Destroy existing chart if present
+  if (window._nbRadarChart) { window._nbRadarChart.destroy(); }
+
+  window._nbRadarChart = new Chart(canvas, {
+    type: 'radar',
+    data: {
+      labels: LABELS,
+      datasets: [
+        {
+          label: abbr(nbHomeTeam),
+          data: homeData,
+          backgroundColor: 'rgba(37,99,235,0.12)',
+          borderColor: '#2563eb',
+          borderWidth: 1.5,
+          pointBackgroundColor: '#2563eb',
+          pointRadius: 3,
+          borderDash: []
+        },
+        {
+          label: abbr(nbAwayTeam),
+          data: awayData,
+          backgroundColor: 'rgba(220,38,38,0.10)',
+          borderColor: '#dc2626',
+          borderWidth: 1.5,
+          pointBackgroundColor: '#dc2626',
+          pointRadius: 3,
+          borderDash: [4,3]
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        r: {
+          min: 0.6, max: 1.5,
+          ticks: { display: false, stepSize: 0.2 },
+          grid: { color: 'rgba(0,0,0,0.06)' },
+          pointLabels: { font: { size: 10 }, color: '#888' },
+          angleLines: { color: 'rgba(0,0,0,0.06)' }
+        }
+      }
+    }
+  });
+
+  // Build legend
+  const legend = document.getElementById('nbRadarLegend');
+  if (legend) {
+    legend.innerHTML = [
+      { col:'#2563eb', label: abbr(nbHomeTeam), dash:false },
+      { col:'#dc2626', label: abbr(nbAwayTeam), dash:true  }
+    ].map(l => `<span style="display:flex;align-items:center;gap:4px;">
+      <span style="width:14px;height:2px;background:${l.col};display:inline-block;${l.dash?'background:repeating-linear-gradient(90deg,'+l.col+' 0,'+l.col+' 3px,transparent 3px,transparent 5px)':''}"></span>
+      ${l.label}
+    </span>`).join('');
+  }
+}
+
+function setNbView(side) {
+  nbViewTeam = side;
+  // Re-render just the proj table
+  const matrix   = NARRATIVE_MATRIX[nbScenario];
+  const anchor   = calcAnchorScores(nbScenario, nbDial);
+  const STATS_KEYS = ['pts','fga','tpm','tpa','reb','ast','stl','blk'];
+  const STATS_LABELS = { pts:'PTS', fga:'FGA', tpm:'TPM', tpa:'TPA', reb:'REB', ast:'AST', stl:'STL', blk:'BLK' };
+
+  function buildProjTable(teamName, teamSide, picks, matrixIdx) {
+    const players = getTeamPlayers(teamName);
+    let totalPts = 0, totalPtsProj = 0;
+
+    const rows = players.map(player => {
+      const isStar = picks.includes(player.name);
+      const avgTpa = getPlayerAvg(player, 'tpa');
+
+      const cells = STATS_KEYS.map(key => {
+        const avg = getPlayerAvg(player, key);
+        if (avg === 0 && !['stl','blk'].includes(key)) {
+          return `<td><div class="nb-proj-cell"><div class="nb-bubble nb-bubble-n">N</div><div class="nb-proj-val">—</div></div></td>`;
+        }
+
+        let mult = applyDial(matrix[key][matrixIdx], nbDial);
+        if (isStar) {
+          if (key === 'pts') mult *= 1.20;
+          else if (key === 'fga') mult *= 1.15;
+          else if (key === 'ast') mult *= 0.85;
+          else if (key === 'tpm' || key === 'tpa') {
+            mult *= avgTpa >= TPA_THRESHOLD ? 1.25 : 1.05;
+          }
+        }
+
+        const proj = projectStat(avg, mult, key);
+        const dir  = pillDir(mult);
+
+        if (key === 'pts') {
+          if (avg > 0) totalPts += avg;
+          totalPtsProj += proj;
+        }
+
+        const avgFmt = Number.isInteger(avg) ? avg : avg.toFixed(1);
+        return `<td>
+          <div class="nb-proj-cell">
+            <div class="nb-bubble nb-bubble-${dir[0]}">${dir[0].toUpperCase()}</div>
+            <div class="nb-proj-val">${proj}</div>
+            <div class="nb-proj-avg">(${avgFmt})</div>
+          </div>
+        </td>`;
+      }).join('');
+
+      const starBadge = isStar ? '<span class="nb-star-badge">★ KEY</span>' : '';
+      return `<tr>
+        <td><div class="nb-player-cell"><span style="font-family:var(--font-condensed);font-size:13px;font-weight:700;color:var(--text)">${player.name}</span>${starBadge}</div></td>
+        ${cells}
+      </tr>`;
+    }).join('');
+
+    const totalRow = `<tr class="nb-total-row">
+      <td style="font-family:var(--font-condensed);font-size:12px;letter-spacing:1px;text-transform:uppercase;color:var(--text-sub)">TOTAL PTS</td>
+      <td colspan="${STATS_KEYS.length}" style="text-align:left;font-family:var(--font-mono);font-size:14px;color:var(--text)">
+        <span style="font-size:20px;font-weight:500">${totalPtsProj}</span>
+        <span style="font-size:12px;color:var(--text-sub);margin-left:8px">vs projected ${anchor[matrixIdx===0?'home':'away']} · avg sum ${Math.round(totalPts)}</span>
+      </td>
+    </tr>`;
+
+    const headers = STATS_KEYS.map(k => `<th>${STATS_LABELS[k]}</th>`).join('');
+    return `
+      <table class="nb-proj-tbl">
+        <thead><tr>
+          <th>Player</th>
+          ${headers}
+        </tr></thead>
+        <tbody>${rows}${totalRow}</tbody>
+      </table>`;
+  }
+
+  // Update toggle
+  document.querySelectorAll('.nb-toggle-opt').forEach(b => {
+    b.classList.toggle('active', b.textContent === (side==='home'?nbHomeTeam:nbAwayTeam));
+  });
+
+  document.getElementById('nbProjWrap').innerHTML = side === 'home'
+    ? buildProjTable(nbHomeTeam, 0, nbHomePicks, 0)
+    : buildProjTable(nbAwayTeam, 1, nbAwayPicks, 1);
+}
+
+// Activate nb button when round + team are selected
+function updateNbBtn() {
+  const btn = document.getElementById('nbBtn');
+  if (!btn.classList.contains('back')) {
+    btn.classList.toggle('active', !!(selRound && selTeam));
+  }
+}
 
 // ══════════════════════════════════════════════════════════
 //  LOCK SCREEN
@@ -2004,5 +3312,6 @@ document.getElementById('lockInput').addEventListener('keydown', e => {
 // ══════════════════════════════════════════════════════════
 initApp();
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 </body>
 </html>
