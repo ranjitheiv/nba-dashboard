@@ -2937,8 +2937,10 @@ function submitNarrative() {
 
       const cells = STATS_KEYS.map(key => {
         const avg = getPlayerAvg(player, key);
+
+        // No data — blank cell
         if (avg === 0 && !['stl','blk'].includes(key)) {
-          return `<td><div class="nb-proj-cell"><div class="nb-bubble nb-bubble-n">N</div><div class="nb-proj-val">—</div></div></td>`;
+          return '<td></td>';
         }
 
         // Get narrative multiplier
@@ -2954,20 +2956,30 @@ function submitNarrative() {
           }
         }
 
-        const proj = projectStat(avg, mult, key);
-        const dir  = pillDir(mult);
+        const proj    = projectStat(avg, mult, key);
+        const avgRnd  = Math.round(avg); // standard rounding for display
+        const dir     = pillDir(mult);
 
         if (key === 'pts') {
           if (avg > 0) totalPts += avg;
           totalPtsProj += proj;
         }
 
-        const avgFmt = Number.isInteger(avg) ? avg : avg.toFixed(1);
+        // If projection rounds to same as average — no meaningful signal, show blank
+        if (proj === avgRnd || dir === 'normal') {
+          return `<td>
+            <div class="nb-proj-cell">
+              <div class="nb-proj-val" style="color:var(--text-sub)">${proj}</div>
+              <div class="nb-proj-avg">(${avgRnd})</div>
+            </div>
+          </td>`;
+        }
+
         return `<td>
           <div class="nb-proj-cell">
             <div class="nb-bubble nb-bubble-${dir[0]}">${dir[0].toUpperCase()}</div>
             <div class="nb-proj-val">${proj}</div>
-            <div class="nb-proj-avg">(${avgFmt})</div>
+            <div class="nb-proj-avg">(${avgRnd})</div>
           </div>
         </td>`;
       }).join('');
@@ -3200,8 +3212,10 @@ function setNbView(side) {
 
       const cells = STATS_KEYS.map(key => {
         const avg = getPlayerAvg(player, key);
+
+        // No data — blank cell
         if (avg === 0 && !['stl','blk'].includes(key)) {
-          return `<td><div class="nb-proj-cell"><div class="nb-bubble nb-bubble-n">N</div><div class="nb-proj-val">—</div></div></td>`;
+          return '<td></td>';
         }
 
         let mult = applyDial(matrix[key][matrixIdx], nbDial);
@@ -3214,20 +3228,30 @@ function setNbView(side) {
           }
         }
 
-        const proj = projectStat(avg, mult, key);
-        const dir  = pillDir(mult);
+        const proj   = projectStat(avg, mult, key);
+        const avgRnd = Math.round(avg);
+        const dir    = pillDir(mult);
 
         if (key === 'pts') {
           if (avg > 0) totalPts += avg;
           totalPtsProj += proj;
         }
 
-        const avgFmt = Number.isInteger(avg) ? avg : avg.toFixed(1);
+        // If projection rounds to same as average — no meaningful signal, show muted
+        if (proj === avgRnd || dir === 'normal') {
+          return `<td>
+            <div class="nb-proj-cell">
+              <div class="nb-proj-val" style="color:var(--text-sub)">${proj}</div>
+              <div class="nb-proj-avg">(${avgRnd})</div>
+            </div>
+          </td>`;
+        }
+
         return `<td>
           <div class="nb-proj-cell">
             <div class="nb-bubble nb-bubble-${dir[0]}">${dir[0].toUpperCase()}</div>
             <div class="nb-proj-val">${proj}</div>
-            <div class="nb-proj-avg">(${avgFmt})</div>
+            <div class="nb-proj-avg">(${avgRnd})</div>
           </div>
         </td>`;
       }).join('');
