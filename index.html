@@ -321,10 +321,10 @@ html, body {
 /* Sticky fixed columns */
 .fc { position: sticky; z-index: 2; background: #f5f8fc !important; }
 .fc-jersey  { left: 0;     width: var(--w-jersey);  min-width: var(--w-jersey);  max-width: var(--w-jersey); }
-.fc-player  { left: 46px;  width: var(--w-player);  min-width: var(--w-player);  max-width: var(--w-player); text-align: left !important; }
-.fc-pos     { left: 211px; width: var(--w-pos);     min-width: var(--w-pos);     max-width: var(--w-pos); }
-.fc-avgmin  { left: 283px; width: var(--w-avgmin);  min-width: var(--w-avgmin);  max-width: var(--w-avgmin); }
-.fc-lastmin { left: 357px; width: var(--w-lastmin); min-width: var(--w-lastmin); max-width: var(--w-lastmin); }
+.fc-player  { left: 46px;  width: var(--w-player);  min-width: 120px; text-align: left !important; }
+.fc-pos     { left: 211px; width: var(--w-pos);     min-width: 52px; }
+.fc-avgmin  { left: 283px; width: var(--w-avgmin);  min-width: 58px; }
+.fc-lastmin { left: 357px; width: var(--w-lastmin); min-width: 58px; }
 .dtbl thead th.fc { z-index: 4; }
 
 /* Fixed cell text styles */
@@ -1079,7 +1079,7 @@ html, body {
 /* ── Three-panel summary layout */
 .nb-summary-3col {
   display: grid;
-  grid-template-columns: 200px 1.6fr 1fr 1fr;
+  grid-template-columns: 200px 1fr;
   gap: 10px;
   align-items: stretch;
 }
@@ -1145,6 +1145,191 @@ html, body {
 .nb-leg-nums   { text-align: right; flex-shrink: 0; }
 .nb-leg-proj   { font-family: var(--font-mono); font-size: 13px; color: var(--text); }
 .nb-leg-avg    { font-family: var(--font-mono); font-size: 10px; color: var(--text-sub); }
+
+
+/* ── SGM BUILDER ─────────────────────────────────────────── */
+.sgm-cat-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.sgm-cat-pill {
+  padding: 4px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--border-mid);
+  background: var(--bg);
+  font-family: var(--font-condensed);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.12s;
+  color: var(--text-sub);
+}
+.sgm-cat-pill:hover { border-color: var(--accent); color: var(--accent); }
+.sgm-cat-pill.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+.sgm-gate-pills { display: flex; gap: 6px; margin-bottom: 12px; }
+.sgm-gate-pill {
+  padding: 4px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--border-mid);
+  background: var(--bg);
+  font-family: var(--font-condensed);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.12s;
+  color: var(--text-sub);
+}
+.sgm-gate-pill.con.active  { background: #059669; color: #fff; border-color: #059669; }
+.sgm-gate-pill.mod.active  { background: #d97706; color: #fff; border-color: #d97706; }
+.sgm-gate-pill.agg.active  { background: #dc2626; color: #fff; border-color: #dc2626; }
+.sgm-gate-pill:hover { opacity: 0.8; }
+
+.sgm-leg-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+.sgm-tbl { width: 100%; border-collapse: collapse; }
+.sgm-tbl th {
+  font-family: var(--font-condensed);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-sub);
+  padding: 6px 8px;
+  border-bottom: 2px solid var(--border-mid);
+  text-align: center;
+  white-space: nowrap;
+}
+.sgm-tbl th:first-child { text-align: left; }
+.sgm-tbl td {
+  padding: 7px 8px;
+  border-bottom: 1px solid var(--border);
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text);
+  vertical-align: middle;
+  white-space: nowrap;
+}
+.sgm-tbl tr:last-child td { border-bottom: none; }
+.sgm-tbl td:first-child { text-align: left; }
+.sgm-tbl tr:hover td { background: #f0f6ff; }
+
+.sgm-player-name { font-family: var(--font-condensed); font-size: 13px; font-weight: 700; color: var(--text); }
+.sgm-team-home { color: #2563eb; font-size: 11px; font-weight: 700; margin-left: 4px; }
+.sgm-team-away { color: #dc2626; font-size: 11px; font-weight: 700; margin-left: 4px; }
+
+.sgm-over  { color: #059669; font-weight: 600; }
+.sgm-under { color: #dc2626; font-weight: 600; }
+.sgm-game-val { color: var(--text); }
+.sgm-game-empty { color: var(--text-dim); font-size: 10px; }
+
+.sgm-check {
+  width: 18px; height: 18px;
+  border-radius: 4px;
+  border: 2px solid var(--border-mid);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: transparent;
+  transition: all 0.12s;
+  flex-shrink: 0;
+  background: var(--bg);
+}
+.sgm-check.checked {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+/* Mini sparkline strip */
+.sgm-spark { display: inline-block; vertical-align: middle; }
+
+/* Current Selections */
+.sgm-selections {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 14px;
+  background: var(--surface);
+}
+.sgm-sel-hdr {
+  padding: 8px 14px;
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+}
+.sgm-sel-title {
+  font-family: var(--font-condensed);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-sub);
+}
+.sgm-clear-btn {
+  font-family: var(--font-condensed);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #dc2626;
+  background: none;
+  border: 1px solid #fecdd3;
+  border-radius: 4px;
+  padding: 2px 8px;
+  cursor: pointer;
+  transition: all 0.12s;
+}
+.sgm-clear-btn:hover { background: #fee2e2; }
+
+.sgm-sel-body { padding: 10px 14px; display: none; }
+.sgm-sel-body.open { display: block; }
+.sgm-sel-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+}
+.sgm-sel-row:last-child { border-bottom: none; }
+.sgm-sel-num { font-family: var(--font-mono); color: var(--text-sub); width: 16px; flex-shrink: 0; }
+.sgm-sel-player { font-family: var(--font-condensed); font-weight: 700; color: var(--text); font-size: 13px; }
+.sgm-sel-cat { font-family: var(--font-condensed); font-weight: 600; color: var(--text-sub); font-size: 11px; letter-spacing: 1px; text-transform: uppercase; }
+.sgm-risk-badge {
+  padding: 1px 7px;
+  border-radius: 20px;
+  font-family: var(--font-condensed);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.risk-low  { background: #d1fae5; color: #065f46; }
+.risk-med  { background: #fef3c7; color: #92400e; }
+.risk-high { background: #fee2e2; color: #7f1d1d; }
+.sgm-sel-lines { font-family: var(--font-mono); font-size: 11px; color: var(--text-sub); margin-left: auto; }
 
 /* ─── LOCK SCREEN ────────────────────────────────────────── */
 #lockScreen {
@@ -1297,22 +1482,26 @@ html, body {
   <div class="team-name-wrap">
     <div class="team-name-display" id="teamNameDisp"></div>
     <button class="flip-btn" id="flipBtn" onclick="flipTeam()" title="Switch to opposing team">
-  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
-    <path d="M21 3v5h-5"/>
-    <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
-    <path d="M8 16H3v5"/>
-  </svg>
-</button>
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+        <path d="M21 3v5h-5"/>
+        <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+        <path d="M8 16H3v5"/>
+      </svg>
+    </button>
   </div>
+  <div id="teamVsLine" style="font-size:14px;font-weight:600;color:var(--text-sub);letter-spacing:1px;margin-top:2px;display:none;"></div>
   <div style="display:flex;align-items:center;justify-content:space-between;margin-top:4px;">
-    <div class="team-meta-line" id="teamMeta"></div>
-    <button class="nb-btn" id="nbBtn" onclick="openNarrativeBuilder()" style="flex-shrink:0;margin-left:16px;">🏀 Narrative Builder</button>
+    <div class="team-meta-line" id="teamMeta" style="text-transform:none;"></div>
+    <div id="nbBtnWrap" style="display:none;flex-shrink:0;">
+      <button class="nb-btn active" id="nbBtn" onclick="openNarrativeBuilder()">🏀 Narrative Builder</button>
+    </div>
   </div>
 </div>
 
 <!-- NARRATIVE BUILDER PAGE -->
 <div class="nb-page" id="nbPage"></div>
+
 
 <!-- MAIN -->
 <div class="content" id="mainContent">
@@ -1328,7 +1517,7 @@ html, body {
 //  CONFIG
 // ══════════════════════════════════════════════════════════
 const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbx753C2Wh22B9VerEmGQKgTFU60bHbXUd4gO7_u_9iSkMfdeEyr_qmiz58SYQ1Lk-Q/exec';
-const PASSWORD    = 'nba2026'; // ← change this to whatever you want
+const PASSWORD    = 'letsgo'; // ← change this to whatever you want
 
 // ══════════════════════════════════════════════════════════
 //  STAT DEFINITIONS
@@ -1582,7 +1771,11 @@ function calcAllGates(values) {
 function halfRound(n) { return Math.ceil(n); }
 
 function getActiveStats() {
-  return selCat === 'all' ? STATS : STATS.filter(s => s.key === selCat);
+  if (selCat === 'all') return STATS;
+  // Paired: PTS+FGA always together, TPM+TPA always together
+  if (selCat === 'pts' || selCat === 'fga') return STATS.filter(s => s.key === 'pts' || s.key === 'fga');
+  if (selCat === 'tpm' || selCat === 'tpa') return STATS.filter(s => s.key === 'tpm' || s.key === 'tpa');
+  return STATS.filter(s => s.key === selCat);
 }
 
 // Position abbreviation → coloured bubble
@@ -1667,9 +1860,17 @@ function renderDashboard() {
   const firstRow = allRows.find(r => r.round==selRound && r.team===selTeam && r.homeTeam);
   const homeTeamFull = firstRow ? firstRow.homeTeam : '';
   const awayTeamFull = firstRow ? firstRow.awayTeam : '';
-  const matchup = homeTeamFull ? `${homeTeamFull} vs. ${awayTeamFull}` : '';
+  // Second line: vs. opposing team
+  const vsLine = document.getElementById('teamVsLine');
+  const opposingFull = homeTeamFull === selTeam ? awayTeamFull : homeTeamFull;
+  if (opposingFull && opposingFull !== selTeam) {
+    vsLine.textContent = 'vs. ' + opposingFull;
+    vsLine.style.display = 'block';
+  } else {
+    vsLine.style.display = 'none';
+  }
 
-  // Build per-game score strings e.g. "GM 1: BOS 123 - 91 PHI"
+  // Build per-game score strings
   const gameScores = games.map(g => {
     const row = allRows.find(r => r.round==selRound && r.team===selTeam && r.game==g && r.homeTeam);
     if (!row || !row.homeScore) return null;
@@ -1678,7 +1879,7 @@ function renderDashboard() {
     return `<span style="background:#374151;color:#fff;padding:2px 10px;border-radius:20px;font-size:13px;font-weight:500;white-space:nowrap;">GM ${g}: <strong style="color:#86efac">${homeAbr}</strong> ${row.homeScore} – ${row.awayScore} <strong style="color:#fca5a5">${awayAbr}</strong></span>`;
   }).filter(Boolean).join(' <span style="color:var(--border-hi);margin:0 2px">|</span> ');
 
-  // Determine opposing team and show/hide flip button
+  // Flip button
   const opposingTeam = homeTeamFull === selTeam ? awayTeamFull : homeTeamFull;
   const flipBtn = document.getElementById('flipBtn');
   if (opposingTeam && opposingTeam !== selTeam) {
@@ -1688,11 +1889,11 @@ function renderDashboard() {
     flipBtn.classList.remove('visible');
   }
 
+  // Third line: Round · Games · Scores (no matchup — that's on line 2 now)
   const metaParts = [
     `<span>Round ${selRound}</span>`,
     `<span class="meta-dot"></span>`,
     `<span>${games.length} Game${games.length!==1?'s':''}</span>`,
-    matchup ? `<span class="meta-dot"></span><span>${matchup}</span>` : '',
     gameScores ? `<span class="meta-dot"></span><span>${gameScores}</span>` : ''
   ].filter(Boolean).join('');
 
@@ -2184,7 +2385,7 @@ function buildStatsTable(players, games, activeStats) {
     td(tr, player.jersey,  'fc fc-jersey td-jersey');
     td(tr, player.name,    'fc fc-player td-player');
     tdHTML(tr, posColour(player.pos), 'fc fc-pos td-pos');
-    td(tr, am!==null ? am.toFixed(1) : '—', 'fc fc-avgmin td-min');
+    td(tr, am!==null ? Math.ceil(am).toString() : '—', 'fc fc-avgmin td-min');
     td(tr, lm??'—', 'fc fc-lastmin td-min border-r');
 
     activeStats.forEach((stat,si) => {
@@ -2703,15 +2904,15 @@ function openNarrativeBuilder() {
   nbAwayPicks = [];
   nbViewTeam  = 'home';
 
-  // Hide stat tracker
+  // Hide stat tracker UI
   document.getElementById('teamBanner').style.display = 'none';
   document.getElementById('mainContent').style.display = 'none';
+  document.getElementById('nbBtnWrap').style.display = 'none';
+  document.querySelector('.filter-strip').style.display = 'none';
   document.getElementById('nbPage').classList.add('visible');
 
-  // Swap button
-  document.getElementById('nbBtn').textContent = '← Stat Tracker';
+  // Mark the button as back (used by updateNbBtn guard)
   document.getElementById('nbBtn').classList.add('back');
-  document.getElementById('nbBtn').onclick = closeNarrativeBuilder;
 
   renderNbPage();
 }
@@ -2720,11 +2921,14 @@ function closeNarrativeBuilder() {
   document.getElementById('nbPage').classList.remove('visible');
   document.getElementById('mainContent').style.display = '';
   document.getElementById('teamBanner').style.display = 'block';
+  document.querySelector('.filter-strip').style.display = '';
 
   const btn = document.getElementById('nbBtn');
+  const wrap = document.getElementById('nbBtnWrap');
   btn.textContent = '🏀 Narrative Builder';
   btn.classList.remove('back');
   btn.onclick = openNarrativeBuilder;
+  if (wrap) wrap.style.display = 'block';
 
   renderDashboard();
 }
@@ -2815,13 +3019,13 @@ function renderNbPage() {
             <div class="nb-team-label">Home Team</div>
             <div class="nb-team-name">${home}</div>
             <div class="nb-players">${playerListHTML(homePlayers,'home')}</div>
-            <div class="nb-select-hint">${nbHomePicks.length}/3 selected — players you expect to have big games</div>
+            <div class="nb-select-hint">Select players you expect to have big games</div>
           </div>
           <div>
             <div class="nb-team-label">Away Team</div>
             <div class="nb-team-name">${away}</div>
             <div class="nb-players">${playerListHTML(awayPlayers,'away')}</div>
-            <div class="nb-select-hint">${nbAwayPicks.length}/3 selected — players you expect to have big games</div>
+            <div class="nb-select-hint">Select players you expect to have big games</div>
           </div>
         </div>
       </div>
@@ -3033,11 +3237,13 @@ function submitNarrative() {
       <div class="nb-section-title">NARRATIVE: ${scenarioNames[nbScenario].toUpperCase()}</div>
       <div class="nb-section-sub">Intensity: ${nbDial} · Round ${selRound}</div>
 
-      <div style="margin-top:20px;margin-bottom:10px">
-        <div class="nb-section-title" style="font-size:16px">TEAM SUMMARY</div>
+      <!-- SGM BUILDER -->
+      <div style="margin-top:20px;margin-bottom:10px;display:flex;align-items:center;gap:8px;">
+        <div class="nb-section-title" style="font-size:16px">SGM BUILDER</div>
+        <span class="sgm-leg-count" id="sgmCount">0</span>
       </div>
-      <div class="nb-summary-3col">
 
+      <div class="nb-summary-3col">
         <!-- Score panel -->
         <div class="nb-score-panel">
           <div class="nb-score-panel-team">${nbHomeTeam}</div>
@@ -3048,38 +3254,47 @@ function submitNarrative() {
           <div class="nb-score-panel-label">Projected score</div>
         </div>
 
-        <!-- Summary table panel -->
-        <div class="nb-panel">
-          <div class="nb-panel-hdr">Over / Under by category</div>
-          <div style="flex:1;padding-top:4px;">
-            <table class="nb-summary-tbl" style="width:100%;border-radius:0;border:none;box-shadow:none;table-layout:fixed;">
-              <thead><tr>
-                <th style="text-align:right">${nbHomeTeam.split(' ').pop()}</th>
-                <th style="text-align:center">Stat</th>
-                <th style="text-align:left">${nbAwayTeam.split(' ').pop()}</th>
-              </tr></thead>
-              <tbody>${summaryRows}</tbody>
-            </table>
+        <!-- SGM Builder panel -->
+        <div class="nb-panel" style="padding:14px;">
+          <!-- Category + Gate + Count row -->
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;">
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span style="font-family:var(--font-condensed);font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text-sub);">Category</span>
+              <div class="sgm-cat-pills" id="sgmCatPills" style="margin:0;">
+                ${['pts','fga','tpm','tpa','reb','ast','stl','blk'].map(k =>
+                  `<button class="sgm-cat-pill ${k==='pts'?'active':''}" onclick="sgmSetCat('${k}')">${k.toUpperCase()}</button>`
+                ).join('')}
+              </div>
+            </div>
+            <span style="color:var(--border-hi);font-size:16px;">|</span>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span style="font-family:var(--font-condensed);font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text-sub);">Risk</span>
+              <div class="sgm-gate-pills" id="sgmGatePills" style="margin:0;">
+                <button class="sgm-gate-pill con active" onclick="sgmSetGate('conservative')">LOW</button>
+                <button class="sgm-gate-pill mod" onclick="sgmSetGate('moderate')">MED</button>
+                <button class="sgm-gate-pill agg" onclick="sgmSetGate('aggressive')">HIGH</button>
+              </div>
+            </div>
+
+          </div>
+          <!-- Builder table -->
+          <div id="sgmTableWrap" style="overflow-x:auto;max-height:380px;overflow-y:auto;border:1px solid var(--border);border-radius:6px;margin-bottom:10px;"></div>
+          <!-- Current Selections -->
+          <div class="sgm-selections" id="sgmSelections">
+            <div class="sgm-sel-hdr" onclick="sgmToggleSel()" style="justify-content:space-between;">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span id="sgmChevron" style="font-size:12px;color:var(--text-sub);transition:transform 0.2s;display:inline-block;transform:rotate(180deg);">▲</span>
+                <span class="sgm-sel-title">Current Selections</span>
+                <span class="sgm-leg-count" id="sgmCount2">0</span>
+              </div>
+              <button class="sgm-clear-btn" onclick="event.stopPropagation();sgmClearAll()">Clear all</button>
+            </div>
+            <div class="sgm-sel-body" id="sgmSelBody"></div>
           </div>
         </div>
-
-        <!-- SGM Legs panel -->
-        <div class="nb-panel" id="nbLegsPanel">
-          <div class="nb-panel-hdr">Top SGM legs</div>
-          <div id="nbLegsBody"></div>
-        </div>
-
-        <!-- Radar panel -->
-        <div class="nb-panel" id="nbRadarPanel">
-          <div class="nb-panel-hdr">Narrative intensity</div>
-          <div class="nb-panel-legend" id="nbRadarLegend" style="display:flex;gap:12px;padding:8px 14px 0;font-size:10px;color:var(--text-sub);"></div>
-          <div style="flex:1;padding:8px 14px 14px;position:relative;">
-            <canvas id="nbRadarChart" role="img" aria-label="Radar chart showing narrative intensity across stat categories for both teams">Narrative intensity across PTS, FGA, TPM, TPA, REB, AST, STL, BLK.</canvas>
-          </div>
-        </div>
-
       </div>
 
+      <!-- Player Projections -->
       <div style="margin-top:20px;margin-bottom:10px">
         <div class="nb-section-title" style="font-size:16px">PLAYER PROJECTIONS</div>
       </div>
@@ -3094,104 +3309,267 @@ function submitNarrative() {
     </div>
   `;
 
-  // Scroll to output, then size SGM legs to match summary table
   setTimeout(() => {
     document.getElementById('nbOutput').scrollIntoView({ behavior:'smooth', block:'start' });
-    sizeSGMLegs();
+    renderSGMBuilder();
   }, 120);
 }
 
-function sizeSGMLegs() {
-  const legsPanel = document.getElementById('nbLegsPanel');
-  const legsBody  = document.getElementById('nbLegsBody');
-  if (!legsPanel || !legsBody) return;
+// ── SGM Builder state ─────────────────────────────────────
+let sgmCat  = 'pts';
+let sgmGate = 'conservative';
+// selections: Map of "playerName|category" -> { player, team, category, gate, over, under }
+let sgmSelections = new Map();
 
-  const summaryPanel = legsPanel.closest('.nb-summary-3col')?.children[1];
-  const refH   = summaryPanel ? summaryPanel.offsetHeight : legsPanel.offsetHeight;
-  const hdrH   = legsPanel.querySelector('.nb-panel-hdr').offsetHeight;
-  const rowH   = 46;
-  const maxLegs = Math.max(1, Math.floor((refH - hdrH) / rowH));
-
-  const legs = buildSGMLegs(maxLegs);
-  legsBody.innerHTML = renderSGMLegs(legs);
-
-  // Draw radar chart
-  drawNarrativeRadar();
+function sgmSetCat(cat) {
+  sgmCat = cat;
+  document.querySelectorAll('.sgm-cat-pill').forEach(b => b.classList.toggle('active', b.textContent.toLowerCase() === cat));
+  renderSGMBuilder();
 }
 
-function drawNarrativeRadar() {
-  const canvas = document.getElementById('nbRadarChart');
-  if (!canvas) return;
+function sgmSetGate(gate) {
+  sgmGate = gate;
+  document.querySelectorAll('.sgm-gate-pill').forEach(b => b.classList.remove('active'));
+  const gateMap = { conservative:'con', moderate:'mod', aggressive:'agg' };
+  document.querySelector(`.sgm-gate-pill.${gateMap[gate]}`)?.classList.add('active');
+  renderSGMBuilder();
+}
 
-  // Size canvas to fill its container
-  const wrap = canvas.parentElement;
-  canvas.style.width  = '100%';
-  canvas.style.height = '100%';
+function sgmToggleSel() {
+  const body    = document.getElementById('sgmSelBody');
+  const chevron = document.getElementById('sgmChevron');
+  if (body) {
+    body.classList.toggle('open');
+    if (chevron) chevron.style.transform = body.classList.contains('open') ? 'rotate(180deg)' : 'rotate(0deg)';
+  }
+}
 
-  const matrix   = NARRATIVE_MATRIX[nbScenario];
-  const KEYS     = ['pts','fga','tpm','tpa','reb','ast','stl','blk'];
-  const LABELS   = ['PTS','FGA','TPM','TPA','REB','AST','STL','BLK'];
+function sgmClearAll() {
+  sgmSelections.clear();
+  renderSGMBuilder();
+  renderSGMSelections();
+}
 
-  const homeData = KEYS.map(k => +(applyDial(matrix[k][0], nbDial).toFixed(2)));
-  const awayData = KEYS.map(k => +(applyDial(matrix[k][1], nbDial).toFixed(2)));
+function sgmToggleCheck(playerName, teamName) {
+  const key = playerName + '|' + sgmCat;
+  const gates = calcAllGates(getPlayerStatVals(playerName, teamName, sgmCat));
+  const g = gates[sgmGate];
+  if (sgmSelections.has(key)) {
+    // If same player, same category but different gate — update gate
+    const existing = sgmSelections.get(key);
+    if (existing.gate === sgmGate) {
+      // Same gate — uncheck
+      sgmSelections.delete(key);
+    } else {
+      // Different gate — update to new gate
+      existing.gate = sgmGate;
+      existing.over = g ? g.ovr : null;
+      existing.und  = g ? g.und : null;
+      sgmSelections.set(key, existing);
+    }
+  } else {
+    sgmSelections.set(key, {
+      player: playerName,
+      team: teamName,
+      category: sgmCat,
+      gate: sgmGate,
+      over: g ? g.ovr : null,
+      und:  g ? g.und : null
+    });
+  }
+  renderSGMBuilder();
+  renderSGMSelections();
+}
 
-  // Destroy existing chart if present
-  if (window._nbRadarChart) { window._nbRadarChart.destroy(); }
+function getPlayerStatVals(playerName, teamName, statKey) {
+  const players = getTeamPlayers(teamName);
+  const p = players.find(pl => pl.name === playerName);
+  return p ? statValues(p, statKey) : [];
+}
 
-  window._nbRadarChart = new Chart(canvas, {
-    type: 'radar',
-    data: {
-      labels: LABELS,
-      datasets: [
-        {
-          label: abbr(nbHomeTeam),
-          data: homeData,
-          backgroundColor: 'rgba(37,99,235,0.12)',
-          borderColor: '#2563eb',
-          borderWidth: 1.5,
-          pointBackgroundColor: '#2563eb',
-          pointRadius: 3,
-          borderDash: []
-        },
-        {
-          label: abbr(nbAwayTeam),
-          data: awayData,
-          backgroundColor: 'rgba(220,38,38,0.10)',
-          borderColor: '#dc2626',
-          borderWidth: 1.5,
-          pointBackgroundColor: '#dc2626',
-          pointRadius: 3,
-          borderDash: [4,3]
+function renderSGMBuilder() {
+  const wrap = document.getElementById('sgmTableWrap');
+  if (!wrap) return;
+
+  const STATS_KEYS = ['pts','fga','tpm','tpa','reb','ast','stl','blk'];
+  const STATS_LABELS = { pts:'PTS',fga:'FGA',tpm:'TPM',tpa:'TPA',reb:'REB',ast:'AST',stl:'STL',blk:'BLK' };
+  const matrix = NARRATIVE_MATRIX[nbScenario];
+
+  // Merge both teams, sorted by avg in this category desc
+  const homePlayers = getTeamPlayers(nbHomeTeam);
+  const awayPlayers = getTeamPlayers(nbAwayTeam);
+  const allPlayers  = [
+    ...homePlayers.map(p => ({ ...p, teamFull: nbHomeTeam, side: 'home' })),
+    ...awayPlayers.map(p => ({ ...p, teamFull: nbAwayTeam, side: 'away' })),
+  ].sort((a,b) => getPlayerAvg(b, sgmCat) - getPlayerAvg(a, sgmCat));
+
+  // Games played in this series
+  const games = [...new Set(
+    allRows.filter(r => r.round==selRound && (r.team===nbHomeTeam || r.team===nbAwayTeam)).map(r=>r.game)
+  )].sort((a,b)=>a-b);
+
+  // Extra col?
+  const showExtra = sgmCat === 'pts' || sgmCat === 'fga';
+  const extraLabel = sgmCat === 'pts' ? 'AVG FGA' : 'AVG PTS';
+  const extraKey   = sgmCat === 'pts' ? 'fga' : 'pts';
+  const showExtraTp = sgmCat === 'tpm' || sgmCat === 'tpa';
+  const extraLabelTp = sgmCat === 'tpm' ? 'AVG TPA' : 'AVG TPM';
+  const extraKeyTp   = sgmCat === 'tpm' ? 'tpa' : 'tpm';
+
+  const gameHeaders = games.map(g => `<th>GM${g}</th>`).join('');
+  const extraHeader = (showExtra || showExtraTp)
+    ? `<th>${showExtra ? extraLabel : extraLabelTp}</th>`
+    : '';
+
+  const rows = allPlayers.map(player => {
+    const avg = getPlayerAvg(player, sgmCat);
+    const vals = statValues(player, sgmCat);
+    const allGates = calcAllGates(vals);
+    const g = allGates[sgmGate];
+    const over  = g && g.ovr !== null ? g.ovr : '—';
+    const under = g && g.und !== null ? g.und : '—';
+
+    const key       = player.name + '|' + sgmCat;
+    const isChecked = sgmSelections.has(key);
+
+    const teamCls  = player.side === 'home' ? 'sgm-team-home' : 'sgm-team-away';
+    const teamAbbrV = abbr(player.teamFull);
+
+    // Extra col
+    let extraCell = '';
+    if (showExtra || showExtraTp) {
+      const eKey = showExtra ? extraKey : extraKeyTp;
+      const eAvg = getPlayerAvg(player, eKey);
+      extraCell = `<td style="color:var(--text-sub);font-size:11px">${eAvg > 0 ? Math.round(eAvg) : '—'}</td>`;
+    }
+
+    // Game value cells
+    const gameCells = games.map(gn => {
+      const row = player.games[gn];
+      if (!row || row.isDNP) return '<td class="sgm-game-empty">—</td>';
+      const v = row[sgmCat];
+      if (v === null || v === 0) return '<td class="sgm-game-empty">—</td>';
+      // Apply same CF as stats table
+      const cfg = CF[sgmCat];
+      let bgStyle = '', colorStyle = '', fontStyle = '';
+      if (cfg) {
+        let tierIdx = -1;
+        for (let i = cfg.tiers.length-1; i >= 0; i--) {
+          if (v >= cfg.tiers[i]) { tierIdx = i; break; }
         }
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        r: {
-          min: 0.6, max: 1.5,
-          ticks: { display: false, stepSize: 0.2 },
-          grid: { color: 'rgba(0,0,0,0.06)' },
-          pointLabels: { font: { size: 10 }, color: '#888' },
-          angleLines: { color: 'rgba(0,0,0,0.06)' }
+        if (tierIdx >= 0) {
+          const level = CF_LEVELS[Math.min(tierIdx, CF_LEVELS.length-1)];
+          bgStyle    = `background:${level.bg};`;
+          colorStyle = `color:${level.text};`;
+          fontStyle  = tierIdx >= 3 ? 'font-weight:600;' : '';
         }
       }
-    }
-  });
+      return `<td style="${bgStyle}${colorStyle}${fontStyle}">${v}</td>`;
+    }).join('');
 
-  // Build legend
-  const legend = document.getElementById('nbRadarLegend');
-  if (legend) {
-    legend.innerHTML = [
-      { col:'#2563eb', label: abbr(nbHomeTeam), dash:false },
-      { col:'#dc2626', label: abbr(nbAwayTeam), dash:true  }
-    ].map(l => `<span style="display:flex;align-items:center;gap:4px;">
-      <span style="width:14px;height:2px;background:${l.col};display:inline-block;${l.dash?'background:repeating-linear-gradient(90deg,'+l.col+' 0,'+l.col+' 3px,transparent 3px,transparent 5px)':''}"></span>
-      ${l.label}
-    </span>`).join('');
+    // Mini sparkline
+    const spark = buildMiniSparkline(vals);
+
+    return `<tr>
+      <td style="min-width:160px;">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <div class="sgm-check ${isChecked?'checked':''}" onclick="sgmToggleCheck('${player.name.replace(/'/g,"\'")}','${player.teamFull.replace(/'/g,"\'")}')">✓</div>
+          <div>
+            <span class="sgm-player-name">${player.name}</span>
+            <span class="${teamCls}">${teamAbbrV}</span>
+          </div>
+        </div>
+      </td>
+      <td class="sgm-over">${over}</td>
+      <td class="sgm-under">${under}</td>
+      ${extraCell}
+      ${gameCells}
+      <td>${spark}</td>
+    </tr>`;
+  }).join('');
+
+  wrap.innerHTML = `<table class="sgm-tbl">
+    <thead><tr>
+      <th>Player</th>
+      <th class="sgm-over">Over</th>
+      <th class="sgm-under">Under</th>
+      ${extraHeader}
+      ${gameHeaders}
+      <th>Range</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+
+  // Update counts
+  const count = sgmSelections.size;
+  document.querySelectorAll('#sgmCount,#sgmCount2').forEach(el => { if(el) el.textContent = count; });
+}
+
+function buildMiniSparkline(vals) {
+  if (!vals.length) return '<svg width="120" height="42"></svg>';
+  const W=120, H=42, pad=10, trackY=28, labelY=12;
+  const minV = Math.min(...vals);
+  const maxV = Math.max(...vals);
+  const avgV = vals.reduce((a,b)=>a+b,0)/vals.length;
+  const med  = median(vals);
+  const span = maxV - minV || 1;
+  const toX  = v => pad + ((v-minV)/span)*(W-pad*2);
+  const fmt  = v => Number.isInteger(v) ? v : v.toFixed(1);
+
+  const track = `<line x1="${pad}" y1="${trackY}" x2="${W-pad}" y2="${trackY}" stroke="#e4e9f0" stroke-width="3" stroke-linecap="round"/>`;
+  const fill  = `<line x1="${pad}" y1="${trackY}" x2="${toX(avgV)}" y2="${trackY}" stroke="#93c5fd" stroke-width="3" stroke-linecap="round"/>`;
+
+  // Deduplicate positions to avoid overlapping labels
+  const pts = [
+    { v:minV, col:'#dc2626', label:fmt(minV) },
+    { v:Math.round(avgV*10)/10, col:'#2563eb', label:fmt(avgV) },
+    { v:med,  col:'#6b7280', label:fmt(med) },
+    { v:maxV, col:'#059669', label:fmt(maxV) },
+  ];
+
+  const dots   = pts.map(p => `<circle cx="${toX(p.v)}" cy="${trackY}" r="4" fill="${p.col}" stroke="white" stroke-width="1.5"/>`).join('');
+  // Labels above dots — alternate above/below for min and max to reduce overlap
+  const labels = pts.map((p, i) => {
+    const x    = toX(p.v);
+    const y    = (i === 0 || i === 2) ? labelY : labelY + 2; // slight variation
+    return `<text x="${x}" y="${y}" text-anchor="middle" font-family="monospace" font-size="8" fill="${p.col}">${p.label}</text>`;
+  }).join('');
+
+  return `<svg width="${W}" height="${H}" class="sgm-spark" viewBox="0 0 ${W} ${H}">${track}${fill}${dots}${labels}</svg>`;
+}
+
+function renderSGMSelections() {
+  const body = document.getElementById('sgmSelBody');
+  if (!body) return;
+
+  const count = sgmSelections.size;
+  document.querySelectorAll('#sgmCount,#sgmCount2').forEach(el => { if(el) el.textContent = count; });
+
+  if (!count) {
+    body.innerHTML = '<div style="font-size:12px;color:var(--text-sub);padding:6px 0;">No legs selected yet.</div>';
+    return;
   }
+
+  const riskBadge = gate => {
+    const map = { conservative:['LOW','risk-low'], moderate:['MED','risk-med'], aggressive:['HIGH','risk-high'] };
+    const [label, cls] = map[gate] || ['?',''];
+    return `<span class="sgm-risk-badge ${cls}">${label}</span>`;
+  };
+
+  let i = 1;
+  body.innerHTML = [...sgmSelections.values()].map(sel => {
+    const overStr  = sel.over !== null ? sel.over : '—';
+    const undStr   = sel.und  !== null ? sel.und  : '—';
+    const teamA = sel.team === nbHomeTeam ? nbHomeTeam : nbAwayTeam;
+    return `<div class="sgm-sel-row">
+      <span class="sgm-sel-num">${i++}</span>
+      <span class="sgm-sel-player">${sel.player}</span>
+      <span class="sgm-sel-cat">${abbr(teamA)}</span>
+      <span class="sgm-sel-cat">${sel.category.toUpperCase()}</span>
+      ${riskBadge(sel.gate)}
+      <span class="sgm-sel-lines">Ovr ${overStr} / Und ${undStr}</span>
+    </div>`;
+  }).join('');
 }
 
 function setNbView(side) {
@@ -3294,10 +3672,11 @@ function setNbView(side) {
 
 // Activate nb button when round + team are selected
 function updateNbBtn() {
-  const btn = document.getElementById('nbBtn');
-  if (!btn.classList.contains('back')) {
-    btn.classList.toggle('active', !!(selRound && selTeam));
-  }
+  const wrap = document.getElementById('nbBtnWrap');
+  const btn  = document.getElementById('nbBtn');
+  if (!btn || !wrap) return;
+  if (btn.classList.contains('back')) return; // in NB mode — don't touch
+  wrap.style.display = (selRound && selTeam) ? 'block' : 'none';
 }
 
 // ══════════════════════════════════════════════════════════
