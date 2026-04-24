@@ -80,7 +80,7 @@ html, body {
   margin-right: 10px;
 }
 
-.logo-sep { width: 1px; height: 20px; background: var(--border-mid); margin: 0 16px; }
+.logo-sep { width: 1px; height: 20px; background: var(--border-mid); margin: 0 8px; }
 
 .logo-sub {
   font-size: 11px;
@@ -1331,6 +1331,27 @@ html, body {
 .risk-high { background: #fee2e2; color: #7f1d1d; }
 .sgm-sel-lines { font-family: var(--font-mono); font-size: 11px; color: var(--text-sub); margin-left: auto; }
 
+
+/* ── Player up/down pick buttons */
+.pick-btn {
+  width: 22px; height: 22px;
+  border-radius: 4px;
+  border: 1.5px solid var(--border-mid);
+  background: var(--bg);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.12s;
+  color: var(--text-sub);
+  padding: 0;
+  line-height: 1;
+}
+.pick-btn:hover { border-color: var(--text-sub); }
+.pick-up.pick-up-active   { background: #059669; border-color: #059669; color: #fff; }
+.pick-down.pick-down-active { background: #dc2626; border-color: #dc2626; color: #fff; }
+
 /* ─── LOCK SCREEN ────────────────────────────────────────── */
 #lockScreen {
   position: fixed;
@@ -1436,6 +1457,7 @@ html, body {
 
 <!-- TOPBAR -->
 <div class="topbar">
+  <img src="https://upload.wikimedia.org/wikipedia/en/0/03/National_Basketball_Association_logo.svg" alt="NBA" style="height:26px;width:auto;object-fit:contain;margin-right:10px;flex-shrink:0;" onerror="this.style.display='none'">
   <span class="logo">NBA</span>
   <div class="logo-sep"></div>
   <span class="logo-sub">Playoff Dashboard</span>
@@ -1755,12 +1777,12 @@ function calcAllGates(values) {
       und: halfRound(proj + buf * 1.80)
     },
     moderate: {
-      ovr: halfRound(Math.max(0, proj - buf * 1.25)),
-      und: halfRound(proj + buf * 1.25)
+      ovr: halfRound(Math.max(0, proj - buf * 1.30)),
+      und: halfRound(proj + buf * 1.30)
     },
     aggressive: {
-      ovr: halfRound(Math.max(0, proj - buf * 0.50)),
-      und: halfRound(proj + buf * 0.50)
+      ovr: halfRound(Math.max(0, proj - buf * 0.70)),
+      und: halfRound(proj + buf * 0.70)
     }
   };
 }
@@ -1783,6 +1805,26 @@ function posColour(pos) {
   else if (p === 'SF' || p === 'PF' || p === 'F') cls = 'pos-f';
   else if (p === 'C') cls = 'pos-c';
   return `<span class="pos-bubble ${cls}">${pos || '—'}</span>`;
+}
+
+
+// ESPN NBA team logo URL
+function espnLogoUrl(teamName) {
+  const map = {
+    'Atlanta Hawks':'atl', 'Boston Celtics':'bos', 'Brooklyn Nets':'bkn',
+    'Charlotte Hornets':'cha', 'Chicago Bulls':'chi', 'Cleveland Cavaliers':'cle',
+    'Dallas Mavericks':'dal', 'Denver Nuggets':'den', 'Detroit Pistons':'det',
+    'Golden State Warriors':'gs', 'Houston Rockets':'hou', 'Indiana Pacers':'ind',
+    'Los Angeles Clippers':'lac', 'LA Clippers':'lac', 'Los Angeles Lakers':'lal',
+    'LA Lakers':'lal', 'Memphis Grizzlies':'mem', 'Miami Heat':'mia',
+    'Milwaukee Bucks':'mil', 'Minnesota Timberwolves':'min', 'New Orleans Pelicans':'no',
+    'New York Knicks':'ny', 'Oklahoma City Thunder':'okc', 'Orlando Magic':'orl',
+    'Philadelphia 76ers':'phi', 'Phoenix Suns':'phx', 'Portland Trail Blazers':'por',
+    'Sacramento Kings':'sac', 'San Antonio Spurs':'sa', 'Toronto Raptors':'tor',
+    'Utah Jazz':'utah', 'Washington Wizards':'wsh'
+  };
+  const code = map[teamName];
+  return code ? `https://a.espncdn.com/i/teamlogos/nba/500/${code}.png` : null;
 }
 
 // NBA team name → 3-letter abbreviation
@@ -1851,6 +1893,24 @@ function renderDashboard() {
 
   // Banner
   banner.style.display = 'block';
+  // Team logo in banner
+  const bannerLogoUrl = espnLogoUrl(selTeam);
+  const teamNameWrap = document.getElementById('teamNameDisp').parentElement;
+  let bannerLogo = document.getElementById('bannerTeamLogo');
+  if (!bannerLogo) {
+    bannerLogo = document.createElement('img');
+    bannerLogo.id = 'bannerTeamLogo';
+    bannerLogo.style.cssText = 'height:48px;width:48px;object-fit:contain;margin-right:10px;flex-shrink:0;';
+    bannerLogo.onerror = function() { this.style.display='none'; };
+    teamNameWrap.insertBefore(bannerLogo, document.getElementById('teamNameDisp'));
+  }
+  if (bannerLogoUrl) {
+    bannerLogo.src = bannerLogoUrl;
+    bannerLogo.alt = selTeam;
+    bannerLogo.style.display = 'inline-block';
+  } else {
+    bannerLogo.style.display = 'none';
+  }
   document.getElementById('teamNameDisp').textContent = selTeam.toUpperCase();
 
   // Pull the first row that has game info to get matchup names
@@ -2670,8 +2730,8 @@ document.getElementById('playerSel').addEventListener('change', function() {
 
 let nbScenario   = null;
 let nbDial       = 'moderate';
-let nbHomePicks  = [];  // player names
-let nbAwayPicks  = [];
+let nbHomePicks  = new Map();  // name → 'up' | 'down'
+let nbAwayPicks  = new Map();
 let nbHomeTeam   = '';
 let nbAwayTeam   = '';
 let nbViewTeam   = 'home'; // toggle
@@ -2735,17 +2795,23 @@ const DIAL_SCALE = { conservative: 0.7, moderate: 1.0, aggressive: 1.3 };
 const STL_FLOOR=0, STL_CEIL=4, BLK_FLOOR=0, BLK_CEIL=4;
 
 // Star player boost on top of narrative (applied to picks only)
-const STAR_BOOST = { pts:1.20, fga:1.15, tpm:'tpa_check', tpa:'tpa_check', ast:0.85 };
-const STAR_BOOST_HIGH_TPA = { tpm:1.25, tpa:1.25 };
-const STAR_BOOST_LOW_TPA  = { tpm:1.05, tpa:1.05 };
+// UP delta: small boost within narrative (AND, not OR)
+const STAR_UP = { pts:1.08, fga:1.06, ast:0.94, reb:1.05, stl:1.05, blk:1.05 };
+const STAR_UP_HIGH_TPA = { tpm:1.10, tpa:1.08 };
+const STAR_UP_LOW_TPA  = { tpm:1.04, tpa:1.03 };
+
+// DOWN delta: underperformance within narrative (AND)
+const STAR_DOWN = { pts:0.88, fga:0.90, ast:1.05, reb:0.92, stl:0.90, blk:0.90 };
+const STAR_DOWN_TPA = { tpm:0.85, tpa:0.88 };
 const TPA_THRESHOLD = 3; // avg TPA per game to be considered a 3PT shooter
 
 // Minutes-based scale: how much the narrative affects a player based on court time
 function getMinScale(playerData) {
+  if (!playerData || !playerData.games) return 0.2;
   const minVals = Object.values(playerData.games)
-    .filter(g => !g.isDNP && g.min)
+    .filter(g => g && !g.isDNP && g.min)
     .map(g => parseMinutes(g.min))
-    .filter(v => v !== null);
+    .filter(v => v !== null && !isNaN(v));
   if (!minVals.length) return 0.2;
   const avgMin = minVals.reduce((a,b)=>a+b,0) / minVals.length;
   if (avgMin >= 30) return 1.0;
@@ -2755,7 +2821,7 @@ function getMinScale(playerData) {
 
 // Gates projection (trend-aware) for a set of values
 function gatesProjection(values) {
-  if (!values.length) return 0;
+  if (!values || !values.length) return null;
   const n    = values.length;
   const mean = values.reduce((a,b)=>a+b,0)/n;
   if (n === 1) return mean;
@@ -2763,34 +2829,42 @@ function gatesProjection(values) {
   let num=0, den=0;
   values.forEach((v,i)=>{ num+=(i-xMean)*(v-mean); den+=Math.pow(i-xMean,2); });
   const slope = den>0 ? num/den : 0;
-  return mean + slope*0.4;
+  const proj  = mean + slope*0.4;
+  return isNaN(proj) ? mean : proj;
 }
 
 // Base multiplier — OR logic: star replaces narrative, does not stack
-function getBaseMult(isStar, narrativeMult, statKey, avgTpa) {
-  if (!isStar) return narrativeMult;
-  // Star multipliers by stat
-  const starMults = {
-    pts: 1.15,
-    fga: 1.10,
-    ast: 0.85,
-  };
-  if (statKey === 'pts' || statKey === 'fga' || statKey === 'ast') {
-    return starMults[statKey];
+// direction: 'up' | 'down' | null
+function getPlayerDelta(direction, statKey, avgTpa) {
+  if (!direction) return 1.0;
+  if (direction === 'up') {
+    if (statKey === 'tpm') return avgTpa >= TPA_THRESHOLD ? STAR_UP_HIGH_TPA.tpm : STAR_UP_LOW_TPA.tpm;
+    if (statKey === 'tpa') return avgTpa >= TPA_THRESHOLD ? STAR_UP_HIGH_TPA.tpa : STAR_UP_LOW_TPA.tpa;
+    return STAR_UP[statKey] || 1.0;
   }
-  if (statKey === 'tpm') return avgTpa >= TPA_THRESHOLD ? 1.20 : 1.08;
-  if (statKey === 'tpa') return avgTpa >= TPA_THRESHOLD ? 1.15 : 1.05;
-  // REB, STL, BLK — no star override, use narrative
-  return narrativeMult;
+  if (direction === 'down') {
+    if (statKey === 'tpm' || statKey === 'tpa') return STAR_DOWN_TPA[statKey] || 1.0;
+    return STAR_DOWN[statKey] || 1.0;
+  }
+  return 1.0;
+}
+
+function getBaseMult(direction, narrativeMult, statKey, avgTpa) {
+  // AND logic: delta multiplies on top of narrative
+  const delta = getPlayerDelta(direction, statKey, avgTpa);
+  return narrativeMult * delta;
 }
 
 // Full narrative-adjusted anchor using gates projection
-function narrativeAnchor(values, narrativeMult, isStar, avgTpa, statKey, dial, minScale) {
-  const gatesProj  = gatesProjection(values);
-  const baseMult   = getBaseMult(isStar, narrativeMult, statKey, avgTpa);
-  const dialScale  = DIAL_SCALE[dial];
-  const finalMult  = 1.0 + (baseMult - 1.0) * dialScale * minScale;
-  return gatesProj * finalMult;
+function narrativeAnchor(values, narrativeMult, direction, avgTpa, statKey, dial, minScale) {
+  const gatesProj = gatesProjection(values);
+  if (gatesProj === null || gatesProj === 0) return null;
+  const baseMult  = getBaseMult(direction, narrativeMult, statKey, avgTpa);
+  const dialScale = DIAL_SCALE[dial] || 1.0;
+  const ms        = (minScale !== undefined && !isNaN(minScale)) ? minScale : 0.2;
+  const finalMult = 1.0 + (baseMult - 1.0) * dialScale * ms;
+  const result    = gatesProj * finalMult;
+  return isNaN(result) ? gatesProj : result;
 }
 
 function applyDial(baseMult, dial) {
@@ -2818,8 +2892,9 @@ function projectStat(avg, mult, statKey) {
 }
 
 // New projection using narrative anchor
-function projectStatNarrative(values, narrativeMult, isStar, avgTpa, statKey, dial, minScale) {
-  const anchor = narrativeAnchor(values, narrativeMult, isStar, avgTpa, statKey, dial, minScale);
+function projectStatNarrative(values, narrativeMult, direction, avgTpa, statKey, dial, minScale) {
+  const anchor = narrativeAnchor(values, narrativeMult, direction, avgTpa, statKey, dial, minScale);
+  if (anchor === null || isNaN(anchor)) return null;
   let proj = anchor;
   if (statKey === 'stl') proj = Math.min(STL_CEIL, Math.max(STL_FLOOR, proj));
   if (statKey === 'blk') proj = Math.min(BLK_CEIL, Math.max(BLK_FLOOR, proj));
@@ -2828,8 +2903,9 @@ function projectStatNarrative(values, narrativeMult, isStar, avgTpa, statKey, di
 
 // SGM Builder gates using narrative anchor
 function sgmGatesFromAnchor(values, anchor, tierMult) {
-  const n         = values.length;
-  const dataFloor = Math.max(1.0, 5.0 - (n - 1));
+  if (anchor === null || anchor === undefined || isNaN(anchor)) return { ovr: null, und: null };
+  const n         = values ? values.length : 0;
+  const dataFloor = Math.max(1.0, 5.0 - Math.max(0, n - 1));
   let std = 0;
   if (n > 1) {
     const mean     = values.reduce((a,b)=>a+b,0)/n;
@@ -2837,9 +2913,11 @@ function sgmGatesFromAnchor(values, anchor, tierMult) {
     std = Math.sqrt(variance);
   }
   const buf = n === 0 ? 5.0 : Math.max(dataFloor, std * 0.65);
+  const ovr = Math.ceil(Math.max(0, anchor - buf * tierMult));
+  const und = Math.ceil(anchor + buf * tierMult);
   return {
-    ovr: Math.ceil(Math.max(0, anchor - buf * tierMult)),
-    und: Math.ceil(anchor + buf * tierMult)
+    ovr: isNaN(ovr) ? null : ovr,
+    und: isNaN(und) ? null : und
   };
 }
 
@@ -2921,25 +2999,25 @@ function buildSGMLegs(maxLegs) {
     const teamAbbr = abbr(teamName);
 
     players.forEach(player => {
-      const isStar  = picks.includes(player.name);
-      const avgTpa  = getPlayerAvg(player, 'tpa');
+      const direction = picks.get(player.name) || null;
+      const avgTpa    = getPlayerAvg(player, 'tpa');
+      const minScale  = getMinScale(player);
 
       STATS_KEYS.forEach(key => {
-        const avg = getPlayerAvg(player, key);
+        const vals = statValues(player, key);
+        const avg  = getPlayerAvg(player, key);
         if (avg === 0 && !['stl','blk'].includes(key)) return;
 
-        let mult = applyDial(matrix[key][matrixIdx], nbDial);
-        if (isStar) {
-          if (key === 'pts') mult *= 1.20;
-          else if (key === 'fga') mult *= 1.15;
-          else if (key === 'ast') mult *= 0.85;
-          else if (key === 'tpm' || key === 'tpa') mult *= avgTpa >= TPA_THRESHOLD ? 1.25 : 1.05;
-        }
+        const narrativeMult = matrix[key][matrixIdx];
+        const baseMult      = getBaseMult(direction, narrativeMult, key, avgTpa);
+        const dialScale     = DIAL_SCALE[nbDial];
+        const finalMult     = 1.0 + (baseMult - 1.0) * dialScale * minScale;
+        const dir           = pillDir(finalMult);
+        if (dir === 'normal') return;
 
-        const dir   = pillDir(mult);
-        if (dir === 'normal') return; // skip normal — only extremes make good legs
-        const proj  = projectStat(avg, mult, key);
-        const delta = Math.abs(mult - 1.0); // how far from normal — used for ranking
+        const proj  = projectStatNarrative(vals, narrativeMult, direction, avgTpa, key, nbDial, minScale);
+        if (proj === null || isNaN(proj)) return;
+        const delta = Math.abs(finalMult - 1.0);
 
         legs.push({ player: player.name, team: teamAbbr, stat: STATS_LABELS[key], dir, proj, avg: avg.toFixed(1), delta });
       });
@@ -2975,8 +3053,8 @@ function openNarrativeBuilder() {
   nbAwayTeam  = teams.away;
   nbScenario  = null;
   nbDial      = 'moderate';
-  nbHomePicks = [];
-  nbAwayPicks = [];
+  nbHomePicks = new Map();
+  nbAwayPicks = new Map();
   nbViewTeam  = 'home';
 
   // Hide stat tracker UI
@@ -3018,36 +3096,44 @@ function renderNbPage() {
   const homeAbbrNb = abbr(home);
   const awayAbbrNb = abbr(away);
   const scenarios = [
-    { id:'blowA', icon:'💥', name:`${homeAbbrNb} Blowout`, desc:'Home team dominates' },
-    { id:'blowB', icon:'💥', name:`${awayAbbrNb} Blowout`, desc:'Away team dominates' },
-    { id:'grind', icon:'🔒', name:'Grind',                 desc:'Close defensive game' },
-    { id:'shoot', icon:'🔥', name:'Shootout',              desc:'Close high-scoring game' },
+    { id:'blowA', icon:'💥', name:`${homeAbbrNb} Blowout`, desc:'Home team dominates', logoUrl: espnLogoUrl(home) },
+    { id:'blowB', icon:'💥', name:`${awayAbbrNb} Blowout`, desc:'Away team dominates', logoUrl: espnLogoUrl(away) },
+    { id:'grind', icon:'🔒', name:'Grind',                 desc:'Close defensive game', logoUrl: null },
+    { id:'shoot', icon:'🔥', name:'Shootout',              desc:'Close high-scoring game', logoUrl: null },
   ];
 
-  const scenarioHTML = scenarios.map(s => `
+  const scenarioHTML = scenarios.map(s => {
+    const logoUrl = s.logoUrl ? `<img src="${s.logoUrl}" alt="" style="width:16px;height:16px;object-fit:contain;flex-shrink:0;border-radius:2px;" onerror="this.style.display='none'">` : `<span style="font-size:13px">${s.icon}</span>`;
+    return `
     <div class="nb-scenario ${nbScenario===s.id?'selected':''}" onclick="pickScenario('${s.id}')">
-      <div style="display:flex;align-items:center;gap:8px;justify-content:center;">
-        <span style="font-size:14px">${s.icon}</span>
+      <div style="display:flex;align-items:center;gap:6px;justify-content:center;">
+        ${logoUrl}
         <div>
           <div class="nb-scenario-name">${s.name}</div>
           <div class="nb-scenario-desc">${s.desc}</div>
         </div>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 
   // Players for each team
   const homePlayers = getTeamPlayers(nbHomeTeam);
   const awayPlayers = getTeamPlayers(nbAwayTeam);
 
   const playerListHTML = (players, teamSide) => players.map(p => {
-    const picks = teamSide === 'home' ? nbHomePicks : nbAwayPicks;
-    const limit = teamSide === 'home' ? nbHomePicks.length : nbAwayPicks.length;
-    const isSel = picks.includes(p.name);
-    const isDisabled = !isSel && limit >= 3;
+    const map    = teamSide === 'home' ? nbHomePicks : nbAwayPicks;
+    const dir    = map.get(p.name) || null;
+    const safeN  = p.name.replace(/'/g, "\\'");
+    const upCls  = dir === 'up'   ? 'pick-up-active'   : '';
+    const downCls= dir === 'down' ? 'pick-down-active' : '';
     return `
-      <div class="nb-player ${isSel?'selected':''} ${isDisabled?'disabled':''}"
-           onclick="togglePick('${teamSide}','${p.name.replace(/'/g,"\'")}')">
-        <div class="nb-player-check">✓</div>
+      <div class="nb-player" style="cursor:default;">
+        <button class="pick-btn pick-up ${upCls}"
+                onclick="event.stopPropagation();togglePick('${teamSide}','${safeN}','up')"
+                title="Will outperform narrative">↑</button>
+        <button class="pick-btn pick-down ${downCls}"
+                onclick="event.stopPropagation();togglePick('${teamSide}','${safeN}','down')"
+                title="Will underperform narrative">↓</button>
         <div class="nb-player-name">${p.name}</div>
         <div class="nb-player-pos">${p.pos||''}</div>
       </div>`;
@@ -3138,13 +3224,15 @@ function pickScenario(id) {
   }, 100);
 }
 
-function togglePick(side, name) {
-  const arr = side === 'home' ? nbHomePicks : nbAwayPicks;
-  const idx = arr.indexOf(name);
-  if (idx > -1) arr.splice(idx, 1);
-  else if (arr.length < 3) arr.push(name);
+function togglePick(side, name, direction) {
+  const map = side === 'home' ? nbHomePicks : nbAwayPicks;
+  const cur = map.get(name);
+  if (cur === direction) {
+    map.delete(name); // clicking same direction deselects
+  } else {
+    map.set(name, direction); // set or switch direction
+  }
   renderNbPage();
-  // Restore scroll
   const out = document.getElementById('nbOutput');
   if (out && out.innerHTML) out.scrollIntoView({ behavior:'smooth', block:'start' });
 }
@@ -3211,7 +3299,7 @@ function submitNarrative() {
     let totalPts = 0, totalPtsProj = 0;
 
     const rows = players.map(player => {
-      const isStar = picks.includes(player.name);
+      const direction = picks.get(player.name) || null;
       const avgTpa = getPlayerAvg(player, 'tpa');
 
       const minScale = getMinScale(player);
@@ -3227,11 +3315,13 @@ function submitNarrative() {
 
         // New: gates-based narrative anchor (OR logic — star replaces narrative)
         const narrativeMult = matrix[key][matrixIdx];
-        const proj    = projectStatNarrative(vals, narrativeMult, isStar, avgTpa, key, nbDial, minScale);
+        const projRaw = projectStatNarrative(vals, narrativeMult, direction, avgTpa, key, nbDial, minScale);
+        if (projRaw === null || isNaN(projRaw)) return '<td></td>';
+        const proj    = projRaw;
         const avgRnd  = Math.round(avg);
 
         // Direction from effective final multiplier
-        const baseMult  = getBaseMult(isStar, narrativeMult, key, avgTpa);
+        const baseMult  = getBaseMult(direction, narrativeMult, key, avgTpa);
         const finalMult = 1.0 + (baseMult - 1.0) * DIAL_SCALE[nbDial] * minScale;
         const dir       = pillDir(finalMult);
 
@@ -3259,9 +3349,9 @@ function submitNarrative() {
         </td>`;
       }).join('');
 
-      const starBadge = isStar ? '<span class="nb-star-badge">★ KEY</span>' : '';
+      const dirIcon = direction === 'up' ? '<span class="nb-star-badge" style="background:#d1fae5;color:#065f46;border-color:#6ee7b7">↑ UP</span>' : direction === 'down' ? '<span class="nb-star-badge" style="background:#fee2e2;color:#7f1d1d;border-color:#fca5a5">↓ DOWN</span>' : '';
       return `<tr>
-        <td><div class="nb-player-cell"><span style="font-family:var(--font-condensed);font-size:13px;font-weight:700;color:var(--text)">${player.name}</span>${starBadge}</div></td>
+        <td><div class="nb-player-cell"><span style="font-family:var(--font-condensed);font-size:13px;font-weight:700;color:var(--text)">${player.name}</span>${dirIcon}</div></td>
         ${cells}
       </tr>`;
     }).join('');
@@ -3309,19 +3399,20 @@ function submitNarrative() {
       <div class="nb-section-sub">Intensity: ${nbDial} · Round ${selRound}</div>
 
       <!-- SGM BUILDER -->
-      <div style="margin-top:20px;margin-bottom:10px;display:flex;align-items:center;gap:8px;">
+      <div style="margin-top:20px;margin-bottom:10px;">
         <div class="nb-section-title" style="font-size:16px">SGM BUILDER</div>
-        <span class="sgm-leg-count" id="sgmCount">0</span>
       </div>
 
       <div class="nb-summary-3col">
         <!-- Score panel -->
         <div class="nb-score-panel">
+          ${espnLogoUrl(nbHomeTeam) ? `<img src="${espnLogoUrl(nbHomeTeam)}" alt="${nbHomeTeam}" style="width:68px;height:68px;object-fit:contain;opacity:0.9;margin-bottom:10px;" onerror="this.style.display='none'">` : ''}
           <div class="nb-score-panel-team">${nbHomeTeam}</div>
           <div class="nb-score-panel-num">${anchor.home}</div>
           <div class="nb-score-panel-vs">vs</div>
-          <div class="nb-score-panel-team">${nbAwayTeam}</div>
           <div class="nb-score-panel-num">${anchor.away}</div>
+          <div class="nb-score-panel-team">${nbAwayTeam}</div>
+          ${espnLogoUrl(nbAwayTeam) ? `<img src="${espnLogoUrl(nbAwayTeam)}" alt="${nbAwayTeam}" style="width:68px;height:68px;object-fit:contain;opacity:0.9;margin-top:10px;" onerror="this.style.display='none'">` : ''}
           <div class="nb-score-panel-label">Projected score</div>
         </div>
 
@@ -3435,10 +3526,10 @@ function sgmToggleCheck(playerName, teamName) {
   const sgmVals = getPlayerStatVals(playerName, teamName, sgmCat);
   const sgmAvgTpa = foundPlayer ? getPlayerAvg(foundPlayer, 'tpa') : 0;
   const sgmMinSc  = foundPlayer ? getMinScale(foundPlayer) : 0.2;
-  const sgmIsStar = (teamName === nbHomeTeam ? nbHomePicks : nbAwayPicks).includes(playerName);
+  const sgmDirection = (teamName === nbHomeTeam ? nbHomePicks : nbAwayPicks).get(playerName) || null;
   const sgmNarrMult = nbScenario ? NARRATIVE_MATRIX[nbScenario][sgmCat][foundMatrixIdx] : 1.0;
-  const sgmAnchor = narrativeAnchor(sgmVals, sgmNarrMult, sgmIsStar, sgmAvgTpa, sgmCat, nbDial, sgmMinSc);
-  const tierMults2 = { conservative: 1.80, moderate: 1.25, aggressive: 0.50 };
+  const sgmAnchor = narrativeAnchor(sgmVals, sgmNarrMult, sgmDirection, sgmAvgTpa, sgmCat, nbDial, sgmMinSc);
+  const tierMults2 = { conservative: 1.80, moderate: 1.30, aggressive: 0.70 };
   const gResult2  = sgmGatesFromAnchor(sgmVals, sgmAnchor, tierMults2[sgmGate]);
   const g = { ovr: gResult2.ovr, und: gResult2.und };
   if (sgmSelections.has(key)) {
@@ -3477,17 +3568,18 @@ function getPlayerStatVals(playerName, teamName, statKey) {
 function renderSGMBuilder() {
   const wrap = document.getElementById('sgmTableWrap');
   if (!wrap) return;
+  if (!nbScenario) { wrap.innerHTML = '<div style="padding:14px;font-size:12px;color:var(--text-sub)">Select a narrative first.</div>'; return; }
 
   const STATS_KEYS = ['pts','fga','tpm','tpa','reb','ast','stl','blk'];
   const STATS_LABELS = { pts:'PTS',fga:'FGA',tpm:'TPM',tpa:'TPA',reb:'REB',ast:'AST',stl:'STL',blk:'BLK' };
   const matrix = NARRATIVE_MATRIX[nbScenario];
 
-  // Merge both teams, sorted by avg in this category desc
+  // Merge both teams, sorted by avg in this category desc — matrixIdx tracks home(0)/away(1)
   const homePlayers = getTeamPlayers(nbHomeTeam);
   const awayPlayers = getTeamPlayers(nbAwayTeam);
   const allPlayers  = [
-    ...homePlayers.map(p => ({ ...p, teamFull: nbHomeTeam, side: 'home' })),
-    ...awayPlayers.map(p => ({ ...p, teamFull: nbAwayTeam, side: 'away' })),
+    ...homePlayers.map(p => ({ ...p, teamFull: nbHomeTeam, side: 'home', matrixIdx: 0 })),
+    ...awayPlayers.map(p => ({ ...p, teamFull: nbAwayTeam, side: 'away', matrixIdx: 1 })),
   ].sort((a,b) => getPlayerAvg(b, sgmCat) - getPlayerAvg(a, sgmCat));
 
   // Games played in this series
@@ -3511,18 +3603,20 @@ function renderSGMBuilder() {
   const rows = allPlayers.map(player => {
     const avg  = getPlayerAvg(player, sgmCat);
     const vals = statValues(player, sgmCat);
-    const avgTpaSgm  = getPlayerAvg(player, 'tpa');
-    const isSgmStar  = (player.side === 'home' ? nbHomePicks : nbAwayPicks).includes(player.name);
+    const avgTpaSgm   = getPlayerAvg(player, 'tpa');
+    // Fix: use Map.get() not Array.includes()
+    const sgmDir      = (player.side === 'home' ? nbHomePicks : nbAwayPicks).get(player.name) || null;
     const minScaleSgm = getMinScale(player);
-    const narrativeMultSgm = NARRATIVE_MATRIX[nbScenario][sgmCat][player.matrixIdx];
-    const tierMults = { conservative: 1.80, moderate: 1.25, aggressive: 0.50 };
+    // Fix: use player.matrixIdx which is now correctly set above
+    const narrativeMultSgm = matrix[sgmCat][player.matrixIdx];
+    const tierMults = { conservative: 1.80, moderate: 1.30, aggressive: 0.70 };
     const tierMult = tierMults[sgmGate];
 
-    // Narrative-adjusted anchor using gates projection
-    const anchorSgm = narrativeAnchor(vals, narrativeMultSgm, isSgmStar, avgTpaSgm, sgmCat, nbDial, minScaleSgm);
+    // Narrative-adjusted anchor using gates projection + direction
+    const anchorSgm = narrativeAnchor(vals, narrativeMultSgm, sgmDir, avgTpaSgm, sgmCat, nbDial, minScaleSgm);
     const gResult   = sgmGatesFromAnchor(vals, anchorSgm, tierMult);
-    const over  = gResult.ovr !== null ? gResult.ovr : '—';
-    const under = gResult.und !== null ? gResult.und : '—';
+    const over  = (gResult.ovr !== null && !isNaN(gResult.ovr)) ? gResult.ovr : '—';
+    const under = (gResult.und !== null && !isNaN(gResult.und)) ? gResult.und : '—';
 
     const key       = player.name + '|' + sgmCat;
     const isChecked = sgmSelections.has(key);
@@ -3597,7 +3691,7 @@ function renderSGMBuilder() {
 
   // Update counts
   const count = sgmSelections.size;
-  document.querySelectorAll('#sgmCount,#sgmCount2').forEach(el => { if(el) el.textContent = count; });
+  const c2 = document.getElementById('sgmCount2'); if(c2) c2.textContent = count;
 }
 
 function buildMiniSparkline(vals) {
@@ -3638,7 +3732,7 @@ function renderSGMSelections() {
   if (!body) return;
 
   const count = sgmSelections.size;
-  document.querySelectorAll('#sgmCount,#sgmCount2').forEach(el => { if(el) el.textContent = count; });
+  const c2 = document.getElementById('sgmCount2'); if(c2) c2.textContent = count;
 
   if (!count) {
     body.innerHTML = '<div style="font-size:12px;color:var(--text-sub);padding:6px 0;">No legs selected yet.</div>';
@@ -3680,30 +3774,27 @@ function setNbView(side) {
     let totalPts = 0, totalPtsProj = 0;
 
     const rows = players.map(player => {
-      const isStar = picks.includes(player.name);
+      const direction = picks.get(player.name) || null;
       const avgTpa = getPlayerAvg(player, 'tpa');
 
       const cells = STATS_KEYS.map(key => {
-        const avg = getPlayerAvg(player, key);
+        const vals = statValues(player, key);
+        const avg  = getPlayerAvg(player, key);
 
         // No data — blank cell
         if (avg === 0 && !['stl','blk'].includes(key)) {
           return '<td></td>';
         }
 
-        let mult = applyDial(matrix[key][matrixIdx], nbDial);
-        if (isStar) {
-          if (key === 'pts') mult *= 1.20;
-          else if (key === 'fga') mult *= 1.15;
-          else if (key === 'ast') mult *= 0.85;
-          else if (key === 'tpm' || key === 'tpa') {
-            mult *= avgTpa >= TPA_THRESHOLD ? 1.25 : 1.05;
-          }
-        }
-
-        const proj   = projectStat(avg, mult, key);
+        const narrativeMult = matrix[key][matrixIdx];
+        const minScale2     = getMinScale(player);
+        const projRaw2      = projectStatNarrative(vals, narrativeMult, direction, avgTpa, key, nbDial, minScale2);
+        if (projRaw2 === null || isNaN(projRaw2)) return '<td></td>';
+        const proj   = projRaw2;
         const avgRnd = Math.round(avg);
-        const dir    = pillDir(mult);
+        const bm     = getBaseMult(direction, narrativeMult, key, avgTpa);
+        const fm     = 1.0 + (bm - 1.0) * DIAL_SCALE[nbDial] * minScale2;
+        const dir    = pillDir(fm);
 
         if (key === 'pts') {
           if (avg > 0) totalPts += avg;
@@ -3729,9 +3820,9 @@ function setNbView(side) {
         </td>`;
       }).join('');
 
-      const starBadge = isStar ? '<span class="nb-star-badge">★ KEY</span>' : '';
+      const dirIcon = direction === 'up' ? '<span class="nb-star-badge" style="background:#d1fae5;color:#065f46;border-color:#6ee7b7">↑ UP</span>' : direction === 'down' ? '<span class="nb-star-badge" style="background:#fee2e2;color:#7f1d1d;border-color:#fca5a5">↓ DOWN</span>' : '';
       return `<tr>
-        <td><div class="nb-player-cell"><span style="font-family:var(--font-condensed);font-size:13px;font-weight:700;color:var(--text)">${player.name}</span>${starBadge}</div></td>
+        <td><div class="nb-player-cell"><span style="font-family:var(--font-condensed);font-size:13px;font-weight:700;color:var(--text)">${player.name}</span>${dirIcon}</div></td>
         ${cells}
       </tr>`;
     }).join('');
