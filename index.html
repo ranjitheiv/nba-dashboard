@@ -1517,7 +1517,7 @@ html, body {
 //  CONFIG
 // ══════════════════════════════════════════════════════════
 const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbx753C2Wh22B9VerEmGQKgTFU60bHbXUd4gO7_u_9iSkMfdeEyr_qmiz58SYQ1Lk-Q/exec';
-const PASSWORD    = 'letsgo'; // ← change this to whatever you want
+const PASSWORD    = 'nba2026'; // ← change this to whatever you want
 
 // ══════════════════════════════════════════════════════════
 //  STAT DEFINITIONS
@@ -1751,19 +1751,16 @@ function calcAllGates(values) {
 
   return {
     conservative: {
-      // 2.8x — meaningfully wider, safer lines
-      ovr: halfRound(Math.max(0, proj - buf * 2.0)),
-      und: halfRound(proj + buf * 2.0)
+      ovr: halfRound(Math.max(0, proj - buf * 1.80)),
+      und: halfRound(proj + buf * 1.80)
     },
     moderate: {
-      // 1.4x — balanced
-      ovr: halfRound(Math.max(0, proj - buf * 1.3)),
-      und: halfRound(proj + buf * 1.3)
+      ovr: halfRound(Math.max(0, proj - buf * 1.25)),
+      und: halfRound(proj + buf * 1.25)
     },
     aggressive: {
-      // 0.5x — tight to projection, higher value higher risk
-      ovr: halfRound(Math.max(0, proj - buf * 0.25)),
-      und: halfRound(proj + buf * 0.25)
+      ovr: halfRound(Math.max(0, proj - buf * 0.50)),
+      und: halfRound(proj + buf * 0.50)
     }
   };
 }
@@ -2690,49 +2687,49 @@ const SCENARIOS = [
 // Format: { stat: [winner_mult, loser_mult] } — for grind/shoot both teams get same
 const NARRATIVE_MATRIX = {
   blowA: {
-    pts: [1.15,  0.85],
-    fga: [1.12,  0.90],
-    tpm: [1.20,  0.83],
-    tpa: [1.20,  0.88],
-    reb: [1.15,  0.85],
-    ast: [0.87,  0.85],
-    stl: [1.20,  0.85],
-    blk: [1.15,  0.90],
+    pts: [1.10,  0.90],
+    fga: [1.08,  0.95],
+    tpm: [1.12,  0.90],
+    tpa: [1.12,  0.95],
+    reb: [1.10,  0.92],
+    ast: [0.90,  0.90],
+    stl: [1.12,  0.90],
+    blk: [1.10,  0.92],
   },
   blowB: {
-    pts: [0.85,  1.15],
-    fga: [0.90,  1.12],
-    tpm: [0.83,  1.20],
-    tpa: [0.88,  1.20],
-    reb: [0.85,  1.15],
-    ast: [0.85,  0.87],
-    stl: [0.85,  1.20],
-    blk: [0.90,  1.15],
+    pts: [0.90,  1.10],
+    fga: [0.95,  1.08],
+    tpm: [0.90,  1.12],
+    tpa: [0.95,  1.12],
+    reb: [0.92,  1.10],
+    ast: [0.90,  0.90],
+    stl: [0.90,  1.12],
+    blk: [0.92,  1.10],
   },
   grind: {
-    pts: [0.85,  0.85],
-    fga: [0.92,  0.92],
-    tpm: [0.80,  0.80],
+    pts: [0.90,  0.90],
+    fga: [0.95,  0.95],
+    tpm: [0.90,  0.90],
     tpa: [0.95,  0.95],
-    reb: [1.15,  1.15],
-    ast: [0.85,  0.85],
-    stl: [1.12,  1.12],
-    blk: [1.15,  1.15],
+    reb: [1.10,  1.10],
+    ast: [0.90,  0.90],
+    stl: [1.10,  1.10],
+    blk: [1.10,  1.10],
   },
   shoot: {
-    pts: [1.18,  1.18],
-    fga: [1.10,  1.10],
+    pts: [1.10,  1.10],
+    fga: [1.08,  1.08],
     tpm: [1.20,  1.20],
     tpa: [1.15,  1.15],
-    reb: [0.85,  0.85],
-    ast: [1.15,  1.15],
+    reb: [0.90,  0.90],
+    ast: [1.10,  1.10],
     stl: [0.85,  0.85],
     blk: [0.85,  0.85],
   },
 };
 
 // Dial intensity scaling — multiplier is lerped toward 1.0 (conservative) or amplified (aggressive)
-const DIAL_SCALE = { conservative: 0.7, moderate: 1.0, aggressive: 1.5 };
+const DIAL_SCALE = { conservative: 0.7, moderate: 1.0, aggressive: 1.3 };
 
 // STL/BLK floors and ceilings per game
 const STL_FLOOR=0, STL_CEIL=4, BLK_FLOOR=0, BLK_CEIL=4;
@@ -2743,15 +2740,67 @@ const STAR_BOOST_HIGH_TPA = { tpm:1.25, tpa:1.25 };
 const STAR_BOOST_LOW_TPA  = { tpm:1.05, tpa:1.05 };
 const TPA_THRESHOLD = 3; // avg TPA per game to be considered a 3PT shooter
 
+// Minutes-based scale: how much the narrative affects a player based on court time
+function getMinScale(playerData) {
+  const minVals = Object.values(playerData.games)
+    .filter(g => !g.isDNP && g.min)
+    .map(g => parseMinutes(g.min))
+    .filter(v => v !== null);
+  if (!minVals.length) return 0.2;
+  const avgMin = minVals.reduce((a,b)=>a+b,0) / minVals.length;
+  if (avgMin >= 30) return 1.0;
+  if (avgMin >= 18) return 0.6;
+  return 0.2;
+}
+
+// Gates projection (trend-aware) for a set of values
+function gatesProjection(values) {
+  if (!values.length) return 0;
+  const n    = values.length;
+  const mean = values.reduce((a,b)=>a+b,0)/n;
+  if (n === 1) return mean;
+  const xMean = (n-1)/2;
+  let num=0, den=0;
+  values.forEach((v,i)=>{ num+=(i-xMean)*(v-mean); den+=Math.pow(i-xMean,2); });
+  const slope = den>0 ? num/den : 0;
+  return mean + slope*0.4;
+}
+
+// Base multiplier — OR logic: star replaces narrative, does not stack
+function getBaseMult(isStar, narrativeMult, statKey, avgTpa) {
+  if (!isStar) return narrativeMult;
+  // Star multipliers by stat
+  const starMults = {
+    pts: 1.15,
+    fga: 1.10,
+    ast: 0.85,
+  };
+  if (statKey === 'pts' || statKey === 'fga' || statKey === 'ast') {
+    return starMults[statKey];
+  }
+  if (statKey === 'tpm') return avgTpa >= TPA_THRESHOLD ? 1.20 : 1.08;
+  if (statKey === 'tpa') return avgTpa >= TPA_THRESHOLD ? 1.15 : 1.05;
+  // REB, STL, BLK — no star override, use narrative
+  return narrativeMult;
+}
+
+// Full narrative-adjusted anchor using gates projection
+function narrativeAnchor(values, narrativeMult, isStar, avgTpa, statKey, dial, minScale) {
+  const gatesProj  = gatesProjection(values);
+  const baseMult   = getBaseMult(isStar, narrativeMult, statKey, avgTpa);
+  const dialScale  = DIAL_SCALE[dial];
+  const finalMult  = 1.0 + (baseMult - 1.0) * dialScale * minScale;
+  return gatesProj * finalMult;
+}
+
 function applyDial(baseMult, dial) {
   const scale = DIAL_SCALE[dial];
-  // Scale the delta from 1.0 by the dial factor
   return 1.0 + (baseMult - 1.0) * scale;
 }
 
 function pillDir(mult) {
-  if (mult >= 1.06) return 'over';
-  if (mult <= 0.94) return 'under';
+  if (mult >= 1.04) return 'over';
+  if (mult <= 0.96) return 'under';
   return 'normal';
 }
 
@@ -2766,6 +2815,32 @@ function projectStat(avg, mult, statKey) {
   if (statKey === 'stl') proj = Math.min(STL_CEIL, Math.max(STL_FLOOR, proj));
   if (statKey === 'blk') proj = Math.min(BLK_CEIL, Math.max(BLK_FLOOR, proj));
   return Math.round(proj);
+}
+
+// New projection using narrative anchor
+function projectStatNarrative(values, narrativeMult, isStar, avgTpa, statKey, dial, minScale) {
+  const anchor = narrativeAnchor(values, narrativeMult, isStar, avgTpa, statKey, dial, minScale);
+  let proj = anchor;
+  if (statKey === 'stl') proj = Math.min(STL_CEIL, Math.max(STL_FLOOR, proj));
+  if (statKey === 'blk') proj = Math.min(BLK_CEIL, Math.max(BLK_FLOOR, proj));
+  return Math.ceil(proj);
+}
+
+// SGM Builder gates using narrative anchor
+function sgmGatesFromAnchor(values, anchor, tierMult) {
+  const n         = values.length;
+  const dataFloor = Math.max(1.0, 5.0 - (n - 1));
+  let std = 0;
+  if (n > 1) {
+    const mean     = values.reduce((a,b)=>a+b,0)/n;
+    const variance = values.reduce((s,v)=>s+Math.pow(v-mean,2),0)/n;
+    std = Math.sqrt(variance);
+  }
+  const buf = n === 0 ? 5.0 : Math.max(dataFloor, std * 0.65);
+  return {
+    ovr: Math.ceil(Math.max(0, anchor - buf * tierMult)),
+    und: Math.ceil(anchor + buf * tierMult)
+  };
 }
 
 // Get home and away teams for the current round/team selection
@@ -3139,37 +3214,33 @@ function submitNarrative() {
       const isStar = picks.includes(player.name);
       const avgTpa = getPlayerAvg(player, 'tpa');
 
+      const minScale = getMinScale(player);
+
       const cells = STATS_KEYS.map(key => {
-        const avg = getPlayerAvg(player, key);
+        const vals = statValues(player, key);
+        const avg  = getPlayerAvg(player, key);
 
         // No data — blank cell
         if (avg === 0 && !['stl','blk'].includes(key)) {
           return '<td></td>';
         }
 
-        // Get narrative multiplier
-        let mult = applyDial(matrix[key][matrixIdx], nbDial);
+        // New: gates-based narrative anchor (OR logic — star replaces narrative)
+        const narrativeMult = matrix[key][matrixIdx];
+        const proj    = projectStatNarrative(vals, narrativeMult, isStar, avgTpa, key, nbDial, minScale);
+        const avgRnd  = Math.round(avg);
 
-        // Apply star boost on top
-        if (isStar) {
-          if (key === 'pts') mult *= 1.20;
-          else if (key === 'fga') mult *= 1.15;
-          else if (key === 'ast') mult *= 0.85;
-          else if (key === 'tpm' || key === 'tpa') {
-            mult *= avgTpa >= TPA_THRESHOLD ? 1.25 : 1.05;
-          }
-        }
-
-        const proj    = projectStat(avg, mult, key);
-        const avgRnd  = Math.round(avg); // standard rounding for display
-        const dir     = pillDir(mult);
+        // Direction from effective final multiplier
+        const baseMult  = getBaseMult(isStar, narrativeMult, key, avgTpa);
+        const finalMult = 1.0 + (baseMult - 1.0) * DIAL_SCALE[nbDial] * minScale;
+        const dir       = pillDir(finalMult);
 
         if (key === 'pts') {
           if (avg > 0) totalPts += avg;
           totalPtsProj += proj;
         }
 
-        // If projection rounds to same as average — no meaningful signal, show blank
+        // No meaningful signal — show muted
         if (proj === avgRnd || dir === 'normal') {
           return `<td>
             <div class="nb-proj-cell">
@@ -3352,8 +3423,24 @@ function sgmClearAll() {
 
 function sgmToggleCheck(playerName, teamName) {
   const key = playerName + '|' + sgmCat;
-  const gates = calcAllGates(getPlayerStatVals(playerName, teamName, sgmCat));
-  const g = gates[sgmGate];
+  // Find the player object for min scale and star check
+  const allTms = [nbHomeTeam, nbAwayTeam];
+  let foundPlayer = null;
+  let foundMatrixIdx = 0;
+  for (let ti = 0; ti < allTms.length; ti++) {
+    const plist = getTeamPlayers(allTms[ti]);
+    const p = plist.find(pl => pl.name === playerName);
+    if (p) { foundPlayer = p; foundMatrixIdx = ti; break; }
+  }
+  const sgmVals = getPlayerStatVals(playerName, teamName, sgmCat);
+  const sgmAvgTpa = foundPlayer ? getPlayerAvg(foundPlayer, 'tpa') : 0;
+  const sgmMinSc  = foundPlayer ? getMinScale(foundPlayer) : 0.2;
+  const sgmIsStar = (teamName === nbHomeTeam ? nbHomePicks : nbAwayPicks).includes(playerName);
+  const sgmNarrMult = nbScenario ? NARRATIVE_MATRIX[nbScenario][sgmCat][foundMatrixIdx] : 1.0;
+  const sgmAnchor = narrativeAnchor(sgmVals, sgmNarrMult, sgmIsStar, sgmAvgTpa, sgmCat, nbDial, sgmMinSc);
+  const tierMults2 = { conservative: 1.80, moderate: 1.25, aggressive: 0.50 };
+  const gResult2  = sgmGatesFromAnchor(sgmVals, sgmAnchor, tierMults2[sgmGate]);
+  const g = { ovr: gResult2.ovr, und: gResult2.und };
   if (sgmSelections.has(key)) {
     // If same player, same category but different gate — update gate
     const existing = sgmSelections.get(key);
@@ -3422,12 +3509,20 @@ function renderSGMBuilder() {
     : '';
 
   const rows = allPlayers.map(player => {
-    const avg = getPlayerAvg(player, sgmCat);
+    const avg  = getPlayerAvg(player, sgmCat);
     const vals = statValues(player, sgmCat);
-    const allGates = calcAllGates(vals);
-    const g = allGates[sgmGate];
-    const over  = g && g.ovr !== null ? g.ovr : '—';
-    const under = g && g.und !== null ? g.und : '—';
+    const avgTpaSgm  = getPlayerAvg(player, 'tpa');
+    const isSgmStar  = (player.side === 'home' ? nbHomePicks : nbAwayPicks).includes(player.name);
+    const minScaleSgm = getMinScale(player);
+    const narrativeMultSgm = NARRATIVE_MATRIX[nbScenario][sgmCat][player.matrixIdx];
+    const tierMults = { conservative: 1.80, moderate: 1.25, aggressive: 0.50 };
+    const tierMult = tierMults[sgmGate];
+
+    // Narrative-adjusted anchor using gates projection
+    const anchorSgm = narrativeAnchor(vals, narrativeMultSgm, isSgmStar, avgTpaSgm, sgmCat, nbDial, minScaleSgm);
+    const gResult   = sgmGatesFromAnchor(vals, anchorSgm, tierMult);
+    const over  = gResult.ovr !== null ? gResult.ovr : '—';
+    const under = gResult.und !== null ? gResult.und : '—';
 
     const key       = player.name + '|' + sgmCat;
     const isChecked = sgmSelections.has(key);
