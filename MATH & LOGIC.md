@@ -1,31 +1,30 @@
 # NBA Stats Tracker — Math & Logic Reference
 
-> This document explains every formula, multiplier, and calculation used in the dashboard. It covers all three systems: the Gates model on the Stat Tracker page, the Narrative Builder player projections, and the SGM Builder over/under lines.
+> Complete formula, multiplier, and calculation reference for all three analytical systems. Last updated: April 2026.
 
 ---
 
-## Overview of the Three Systems
+## Overview
 
-| System | Where | What it does |
+The dashboard uses three separate calculation systems. They share some helper functions but are independent — changing the narrative has no effect on System 1, and System 1 never uses narrative data.
+
+| System | Where | Inputs |
 |---|---|---|
-| **System 1 — Gates** | Stat Tracker page (Gates table + Focused View) | Pure data-driven Over/Under lines using trend + standard deviation. No narrative. |
-| **System 2 — Player Projections** | Narrative Builder → Player Projections table | Projects each player's stat using a narrative-adjusted anchor. Accounts for game script, key player selection, intensity dial, and playing time. |
-| **System 3 — SGM Builder** | Narrative Builder → SGM Builder table | Combines the narrative-adjusted anchor from System 2 with the Gates buffer from System 1 to produce Over/Under lines for leg selection. |
-
-The three systems are independent. System 1 never uses narrative data. Systems 2 and 3 share the same anchor calculation but System 3 adds the Gates buffer on top of it.
+| **System 1 — Gates** | Stat Tracker: Gates table + Focused View | Player's actual game data only |
+| **System 2 — Player Projections** | Narrative Builder: Player Projections table | Gates projection + narrative + player direction + dial + minutes |
+| **System 3 — SGM Builder** | Narrative Builder: SGM Builder Over/Under | Same anchor as System 2 + Gates buffer |
 
 ---
 
-## System 1 — Gates (Stat Tracker Page)
+## System 1 — Gates
 
-**Used by:** Gates table on the main dashboard · Focused View Gates card
-
-**Data source:** Player's actual game data from the current round only. DNP games excluded.
+*Used by: Gates table on main dashboard · Focused View Gates card*
+*No narrative, no dial, no multipliers — pure series data only*
 
 ### Formula
 
 ```
-1. mean       = average of all played games this round
+1. mean       = average of played games this round (DNP excluded)
 2. slope      = linear regression slope across the game sequence
 3. projection = mean + (slope × 0.4)
 4. std_dev    = standard deviation of played games
@@ -35,37 +34,35 @@ The three systems are independent. System 1 never uses narrative data. Systems 2
    Under      = ceil(projection + buffer × tier_mult)
 ```
 
-### Why slope × 0.4?
+### Why slope × 0.4
 
-The slope captures the trajectory of the player's recent games. Multiplying by 0.4 gives the trend a modest influence on the projection without over-reacting to short runs. A player going 20, 25, 30 has a strong upward slope — the projection nudges upward but doesn't extrapolate blindly.
+The slope captures the trajectory of the player's recent games. Multiplying by 0.4 gives the trend a modest influence without over-reacting to short runs. A player going 20, 25, 30 has a strong upward slope — the projection nudges upward but doesn't extrapolate blindly.
 
 ### Tier Multipliers (fixed — no dial)
 
-| Tier | Mult | Effect |
+| Tier | Mult | Window at buffer=3.0 |
 |---|---|---|
-| Conservative | 1.80× | Wider window — easier lines to beat, lower risk |
-| Moderate | 1.25× | Balanced — standard uncertainty |
-| Aggressive | 0.50× | Tight window — lines close to projection, higher value |
+| Conservative | 1.80× | ±5.4 pts (10.8 pt window) |
+| Moderate | 1.30× | ±3.9 pts (7.8 pt window) |
+| Aggressive | 0.70× | ±2.1 pts (4.2 pt window) |
 
 ### Data Floor
 
-The data floor prevents the algorithm from being falsely confident on thin data. With only 1–2 games the standard deviation is mathematically unreliable, so a minimum buffer is enforced regardless of how consistent the player appears.
+Prevents false confidence when only 1–2 games have been played. Standard deviation is mathematically unreliable on small samples.
 
-| Games played | Floor |
-|---|---|
-| 1 | 5.0 |
-| 2 | 4.0 |
-| 3 | 3.0 |
-| 4 | 2.0 |
-| 5+ | 1.0 |
-
-The buffer takes whichever is larger — the floor or the real standard deviation:
+| Games played | Floor | Reason |
+|---|---|---|
+| 1 | 5.0 | Single data point — maximum uncertainty |
+| 2 | 4.0 | Very thin sample |
+| 3 | 3.0 | Pattern starting to form |
+| 4 | 2.0 | Reasonable sample |
+| 5+ | 1.0 | Real data fully drives the buffer |
 
 ```
 buffer = max(data_floor, std_dev × 0.65)
 ```
 
-By game 5 the floor drops to 1.0 and the actual series data fully drives the buffer width.
+The buffer takes whichever is larger — the floor or the real standard deviation. By game 5, the floor drops to 1.0 and the actual series data fully drives the window.
 
 ### All values rounded up (ceil)
 
@@ -75,9 +72,7 @@ There are no half-points in basketball. All Over/Under lines are rounded up to t
 
 ## System 2 — Narrative Builder Player Projections
 
-**Used by:** Player Projections table in the Narrative Builder
-
-**Data source:** Same game data as System 1, plus narrative scenario, dial intensity, key player selection, and average minutes.
+*Used by: Player Projections table in the Narrative Builder*
 
 ### Formula
 
@@ -92,9 +87,9 @@ Step 2 — Minutes scale
   avg_min 18–29  →  min_scale = 0.6   (partial)
   avg_min < 18   →  min_scale = 0.2   (minimal — bench/spot minutes)
 
-Step 3 — Base multiplier (OR, not AND)
-  if player is a star pick  →  base_mult = star_mult[stat]
-  else                      →  base_mult = narrative_mult[stat]
+Step 3 — Base multiplier (AND logic — direction delta applies ON TOP of narrative)
+  base_mult = narrative_mult[stat] × direction_delta[stat]
+  (direction_delta = 1.0 if player is unmarked)
 
 Step 4 — Narrative-adjusted anchor
   anchor = gates_proj × (1.0 + (base_mult − 1.0) × dial_scale × min_scale)
@@ -103,23 +98,23 @@ Step 5 — Project
   projected = ceil(anchor)
 ```
 
-### Why OR not AND for star/narrative?
+### Why AND (not OR) for direction delta
 
-Previously the star boost was multiplied on top of the narrative multiplier, causing compounding. A star player in a Shootout would get `narrative × star` which inflated projections significantly. Now the star multiplier **replaces** the narrative multiplier entirely — it is simply a higher adjustment reflecting your conviction that this player will have a big game.
+Previously the star boost replaced the narrative multiplier entirely (OR logic), which caused a player selected as UP in a Grind to be projected *above* their average — ignoring that it's a low-scoring game. With AND logic, the direction delta is a small modifier on top of the narrative, so context is always preserved. An UP player in a Grind still scores less than their average — just less suppressed than an unselected player.
 
-### Why use gates_proj instead of the raw average?
+### Why gates_proj instead of raw average
 
-The Gates projection already accounts for momentum via the slope. Using the raw average as the anchor discards trend information. A player scoring 20, 25, 30 across three games has an average of 25 but a Gates projection of 28+. Using the trend-aware anchor means the narrative adjustment is applied on top of an already-intelligent baseline.
+The Gates projection already accounts for momentum via the slope. Using the raw average discards trend information. A player scoring 20, 25, 30 across three games has an average of 25 but a Gates projection of 28+. The narrative adjustment is applied on top of an already-intelligent baseline.
 
 ### Narrative Builder Dial Scale
 
-Controls how strongly you believe the narrative will play out. Does not affect the buffer width — only shifts the anchor.
+Controls how strongly you believe the narrative will play out. Shifts the anchor — does not affect buffer width.
 
-| Dial | Scale |
-|---|---|
-| Conservative | 0.7× |
-| Moderate | 1.0× |
-| Aggressive | 1.3× |
+| Dial | Scale | Meaning |
+|---|---|---|
+| Conservative | 0.7× | Narrative will partially play out |
+| Moderate | 1.0× | Standard belief in the narrative |
+| Aggressive | 1.3× | High conviction — narrative plays out strongly |
 
 ### Narrative Matrix
 
@@ -134,52 +129,63 @@ Controls how strongly you believe the narrative will play out. Does not affect t
 | STL | 1.12 | 0.90 | 0.90 | 1.12 | 1.10 | 0.85 |
 | BLK | 1.10 | 0.92 | 0.92 | 1.10 | 1.10 | 0.85 |
 
-BLOW-B is the exact mirror of BLOW-A with home and away swapped.
+BLOW-B is the exact mirror of BLOW-A.
 
-**Rationale for key values:**
+### Direction Deltas
 
-- **Blowout winner AST (0.90):** Stars are shooting more in a comfortable lead, reducing assists across the board
-- **Grind TPM (0.90):** Defences collapse on the perimeter in close defensive games, fewer open 3s
-- **Shootout TPM (1.20):** Most aggressive upside — open looks, both teams trading threes
-- **Grind/Blowout REB (1.10):** More misses = more rebounds available
-- **Shootout REB (0.90):** More makes = fewer misses = fewer boards
+Applied on top of the narrative multiplier (AND logic). Small adjustments — not replacements.
 
-### Star Multipliers
+**↑ UP delta** — player expected to outperform narrative:
 
-Replaces the narrative multiplier for selected key players. Does not stack on top of it.
+| Stat | UP delta | Condition |
+|---|---|---|
+| PTS | 1.08 | All |
+| FGA | 1.06 | All |
+| AST | 0.94 | Shooting more = fewer assists |
+| REB | 1.05 | All |
+| STL | 1.05 | All |
+| BLK | 1.05 | All |
+| TPM | 1.10 | avg TPA ≥ 3 (high-volume shooter) |
+| TPM | 1.04 | avg TPA < 3 |
+| TPA | 1.08 | avg TPA ≥ 3 |
+| TPA | 1.03 | avg TPA < 3 |
 
-| Stat | Star mult | Condition | vs narrative |
-|---|---|---|---|
-| PTS | 1.15 | All stars | Higher than any scenario's PTS mult |
-| FGA | 1.10 | All stars | More shot volume |
-| AST | 0.85 | All stars | Shooting more = fewer assists |
-| TPM | 1.20 | avg TPA ≥ 3 | High-volume 3PT shooter getting hot |
-| TPM | 1.08 | avg TPA < 3 | Low-volume shooter, modest boost |
-| TPA | 1.15 | avg TPA ≥ 3 | More 3PT attempts for a shooter |
-| TPA | 1.05 | avg TPA < 3 | Modest increase |
-| REB | narrative mult | No override | Game script drives rebounds |
-| STL | narrative mult | No override | Hard to predict individually |
-| BLK | narrative mult | No override | Hard to predict individually |
+**↓ DOWN delta** — player expected to underperform narrative:
 
-**Hard caps regardless of multiplier:**
-- STL: floor 0, ceiling 4
-- BLK: floor 0, ceiling 4
+| Stat | DOWN delta | Condition |
+|---|---|---|
+| PTS | 0.88 | All |
+| FGA | 0.90 | All |
+| AST | 1.05 | Shooting less = more passing |
+| REB | 0.92 | All |
+| STL | 0.90 | All |
+| BLK | 0.90 | All |
+| TPM | 0.85 | All |
+| TPA | 0.88 | All |
+
+**Unmarked player** — direction delta = 1.0 (plain narrative applies)
 
 ### Minutes Scale Rationale
 
-Playoff rotations tighten significantly. A bench player averaging 14 minutes has limited influence on the final stat line regardless of game script. Applying the full narrative multiplier to every player regardless of minutes over-inflates team totals. The minutes scale weights the narrative adjustment by court time:
+Playoff rotations tighten significantly. The narrative affects a 35-minute player far more than a 12-minute bench player. The minutes scale weights the narrative adjustment proportionally to actual court time.
 
-- **30+ minutes** — primary rotation player, full narrative effect
-- **18–29 minutes** — secondary rotation, partial effect
-- **Under 18 minutes** — spot/matchup minutes, narrative barely applies
+| avg MIN | Scale | Effect |
+|---|---|---|
+| 30+ | 1.0 | Full narrative adjustment |
+| 18–29 | 0.6 | Partial adjustment |
+| < 18 | 0.2 | Minimal — narrative barely applies |
+
+### Hard Caps
+
+STL and BLK are capped at 0 minimum and 4 maximum per player regardless of multiplier. No player can be projected to record more than 4 steals or blocks in a single game.
 
 ---
 
 ## System 3 — SGM Builder Over/Under Lines
 
-**Used by:** SGM Builder table (LOW / MED / HIGH risk)
+*Used by: SGM Builder table (LOW / MED / HIGH risk)*
 
-**What it combines:** The narrative-adjusted anchor from System 2 (Steps 1–4) with the Gates buffer from System 1 (Steps 5–6). This means the centre of the Over/Under window shifts with the narrative, while the window width is driven by actual data.
+Combines the narrative-adjusted anchor from System 2 with the Gates buffer from System 1. The centre of the Over/Under window shifts with the narrative and player direction. The window width is driven by actual series data.
 
 ### Formula
 
@@ -187,19 +193,18 @@ Playoff rotations tighten significantly. A bench player averaging 14 minutes has
 Step 1 — Gates projection
   gates_proj = mean + (slope × 0.4)
 
-Step 2 — Minutes scale
+Step 2 — Minutes scale (same as System 2)
   avg_min >= 30  →  min_scale = 1.0
   avg_min 18–29  →  min_scale = 0.6
   avg_min < 18   →  min_scale = 0.2
 
-Step 3 — Base multiplier (OR, not AND)
-  star pick      →  base_mult = star_mult[stat]
-  non-star       →  base_mult = narrative_mult[stat]
+Step 3 — Base multiplier (AND logic — same as System 2)
+  base_mult = narrative_mult[stat] × direction_delta[stat]
 
 Step 4 — Narrative-adjusted anchor
   anchor = gates_proj × (1.0 + (base_mult − 1.0) × dial_scale × min_scale)
 
-Step 5 — Buffer (data-driven)
+Step 5 — Buffer (data-driven — same as System 1)
   std_dev    = standard deviation of played games
   data_floor = max(1.0, 5.0 − (games_played − 1))
   buffer     = max(data_floor, std_dev × 0.65)
@@ -211,84 +216,104 @@ Step 6 — Over/Under lines
 
 ### SGM Risk Tier Multipliers
 
-| SGM Risk | Tier | Mult | Meaning |
+| SGM Risk | Tier | Mult | Window at buffer=3.0 |
 |---|---|---|---|
-| LOW | Conservative | 1.80× | Wide window — safer legs, easier to beat |
-| MED | Moderate | 1.25× | Balanced — standard bet |
-| HIGH | Aggressive | 0.50× | Tight window — higher value, higher risk |
+| LOW | Conservative | 1.80× | ±5.4 pts |
+| MED | Moderate | 1.30× | ±3.9 pts |
+| HIGH | Aggressive | 0.70× | ±2.1 pts |
 
-### How the dial affects the SGM Builder
+### Key distinction from System 1
 
-The dial used in Step 4 is the **Narrative Builder intensity dial** — the same one that affects the Player Projections. Changing the dial shifts the anchor for every player simultaneously, which in turn shifts all the Over/Under lines in the SGM Builder. The buffer width does not change with the dial — only the centre point moves.
+In System 1, the centre of the window is the raw Gates projection. In System 3, the centre is the narrative-adjusted anchor — so in a Shootout, lines shift upward; in a Grind, they shift downward. The buffer calculation is identical in both systems.
+
+### The dial in System 3
+
+The dial_scale used in Step 4 is the Narrative Builder intensity dial (0.7 / 1.0 / 1.3). Changing the dial shifts the anchor for every player simultaneously, which shifts all Over/Under lines in the SGM Builder. The buffer width does not change with the dial.
 
 ---
 
 ## Worked Examples
 
-### Example 1 — Jalen Brunson, Shootout, Moderate dial, Star selected
+### Example 1 — Jalen Brunson, Grind, Moderate dial, marked ↑ UP
+
 *avg MIN=37 · games=3 · mean=27.7 · slope=+1.0 · std_dev=3.2*
 
 ```
 System 2 (Player Projection):
-  gates_proj = 27.7 + (1.0 × 0.4) = 28.1
-  min_scale  = 1.0   (37 mins ≥ 30)
-  base_mult  = 1.15  (star PTS — replaces narrative)
-  dial_scale = 1.0   (Moderate)
-  anchor     = 28.1 × (1.0 + (1.15−1.0) × 1.0 × 1.0)
-             = 28.1 × 1.15 = 32.3
-  projected  = ceil(32.3) = 33
+  gates_proj    = 27.7 + (1.0 × 0.4) = 28.1
+  min_scale     = 1.0   (37 mins ≥ 30)
+  narrative PTS = 0.90  (Grind — suppressed)
+  UP delta PTS  = 1.08
+  base_mult     = 0.90 × 1.08 = 0.972
+  dial_scale    = 1.0   (Moderate)
+  anchor        = 28.1 × (1.0 + (0.972−1.0) × 1.0 × 1.0)
+                = 28.1 × 0.972 = 27.3
+  projected     = ceil(27.3) = 28
 
-System 3 — LOW risk:
-  data_floor = max(1.0, 5.0−2) = 3.0
-  buffer     = max(3.0, 3.2 × 0.65) = max(3.0, 2.08) = 3.0
-  Over       = ceil(32.3 − 3.0 × 1.80) = ceil(26.9) = 27
-  Under      = ceil(32.3 + 3.0 × 1.80) = ceil(37.7) = 38
-
-System 3 — HIGH risk:
-  Over       = ceil(32.3 − 3.0 × 0.50) = ceil(30.8) = 31
-  Under      = ceil(32.3 + 3.0 × 0.50) = ceil(33.8) = 34
+System 3 (SGM Builder LOW risk):
+  data_floor    = max(1.0, 5.0−2) = 3.0
+  buffer        = max(3.0, 3.2 × 0.65) = 3.0
+  Over          = ceil(27.3 − 3.0 × 1.80) = ceil(21.9) = 22
+  Under         = ceil(27.3 + 3.0 × 1.80) = ceil(32.7) = 33
 ```
 
-### Example 2 — Same player, NOT a star, Shootout Moderate
-
+Compare to Brunson **unmarked** in Grind Moderate:
 ```
-  base_mult  = 1.10  (narrative PTS Shootout)
-  anchor     = 28.1 × (1.0 + (1.10−1.0) × 1.0 × 1.0)
-             = 28.1 × 1.10 = 30.9
-  projected  = 31
-  LOW Over   = ceil(30.9 − 5.4) = 26
-  LOW Under  = ceil(30.9 + 5.4) = 37
+  base_mult = 0.90 (narrative only, delta = 1.0)
+  anchor    = 28.1 × 0.90 = 25.3
+  projected = 26
+  LOW Over  = ceil(25.3 − 5.4) = 20
+  LOW Under = ceil(25.3 + 5.4) = 31
 ```
 
-### Example 3 — Bench player, 14 avg MIN, not a star, Shootout Moderate
-*mean=8.0 · slope=+0.5 · std_dev=2.1*
+The ↑ selection gives him slightly higher numbers than an unmarked player, but still suppressed by the Grind — which is the correct behaviour.
+
+### Example 2 — Brunson marked ↓ DOWN in Grind Moderate
+
+```
+  DOWN delta PTS = 0.88
+  base_mult      = 0.90 × 0.88 = 0.792
+  anchor         = 28.1 × (1.0 + (0.792−1.0) × 1.0 × 1.0)
+                 = 28.1 × 0.792 = 22.3
+  projected      = 23
+  LOW Over       = ceil(22.3 − 5.4) = 17
+  LOW Under      = ceil(22.3 + 5.4) = 28
+```
+
+### Example 3 — Brunson in Shootout, Aggressive dial, marked ↑ UP
+
+```
+  narrative PTS  = 1.10  (Shootout)
+  UP delta PTS   = 1.08
+  base_mult      = 1.10 × 1.08 = 1.188
+  dial_scale     = 1.3   (Aggressive)
+  anchor         = 28.1 × (1.0 + (1.188−1.0) × 1.3 × 1.0)
+                 = 28.1 × 1.244 = 35.0
+  projected      = 35
+  LOW Over  = ceil(35.0 − 5.4) = 30
+  LOW Under = ceil(35.0 + 5.4) = 41
+  HIGH Over = ceil(35.0 − 2.1) = 33
+  HIGH Under= ceil(35.0 + 2.1) = 38
+```
+
+### Example 4 — Bench player, 14 avg MIN, unmarked, Grind Moderate
+
+*mean=8.0 · slope=0.5 · std_dev=2.1*
 
 ```
   gates_proj = 8.0 + (0.5 × 0.4) = 8.2
   min_scale  = 0.2  (14 mins < 18)
-  base_mult  = 1.10
-  anchor     = 8.2 × (1.0 + (1.10−1.0) × 1.0 × 0.2)
-             = 8.2 × 1.02 = 8.4
+  base_mult  = 0.90 (narrative Grind PTS, delta=1.0)
+  anchor     = 8.2 × (1.0 + (0.90−1.0) × 1.0 × 0.2)
+             = 8.2 × 0.98 = 8.0
   projected  = 9
-
   data_floor = 3.0
   buffer     = max(3.0, 2.1 × 0.65) = 3.0
-  LOW Over   = ceil(8.4 − 5.4) = 3
-  LOW Under  = ceil(8.4 + 5.4) = 14
+  LOW Over   = ceil(8.0 − 5.4) = 3
+  LOW Under  = ceil(8.0 + 5.4) = 14
 ```
 
-### Example 4 — Same star player, Aggressive dial instead of Moderate
-
-```
-  dial_scale = 1.3  (Aggressive)
-  anchor     = 28.1 × (1.0 + (1.15−1.0) × 1.3 × 1.0)
-             = 28.1 × 1.195 = 33.6
-  projected  = 34
-  LOW Over   = ceil(33.6 − 5.4) = 29
-  LOW Under  = ceil(33.6 + 5.4) = 40
-  HIGH Over  = ceil(33.6 − 1.5) = 33
-  HIGH Under = ceil(33.6 + 1.5) = 36
-```
+The narrative barely affects this player — their lines are almost identical to what they'd be without any narrative.
 
 ---
 
@@ -297,16 +322,32 @@ System 3 — HIGH risk:
 | Decision | Rationale |
 |---|---|
 | Slope × 0.4 as projection | Captures momentum without over-extrapolating short runs |
-| Data floor dropping game by game | Prevents false confidence on 1–2 game samples |
-| Star mult replaces narrative (OR not AND) | Avoids compounding — one adjustment per player per stat |
+| Data floor decreasing by game | Prevents false confidence on 1–2 game samples |
+| AND logic for direction delta | Preserves game script context — UP in Grind still suppressed, just less so |
+| Small direction deltas (1.08 max) | Avoids compounding — direction is a modest adjustment, not an override |
 | Minutes scale | Bench players shouldn't feel the full narrative regardless of game script |
-| Gates projection as anchor for Systems 2 & 3 | Uses trend-aware baseline rather than flat average |
-| Dial affects anchor only | Intensity of your narrative belief shifts the centre — not the uncertainty width |
+| Gates projection as anchor (not raw avg) | Uses trend-aware baseline across all three systems |
+| Dial affects anchor only | Intensity of narrative belief shifts the centre — not the uncertainty width |
 | Tier mult affects buffer width only | Risk tolerance on the bet is separate from belief in the narrative |
 | STL/BLK hard capped at 4 | Individual players cannot realistically record more than 4 steals or blocks |
 | All values ceil() | No half-points in basketball |
+| Same tier mults in System 1 and System 3 | Consistent risk interpretation across the whole dashboard |
 
 ---
 
-*Last updated: April 2026*
+## Multiplier Changelog
+
+| Date | System | Change | Reason |
+|---|---|---|---|
+| Apr 2026 | All | Initial implementation | — |
+| Apr 2026 | Narrative matrix | All mults reduced (e.g. PTS 1.15→1.10) | Gates projection is trend-aware, so smaller adjustments needed |
+| Apr 2026 | Logic | OR replaced with AND for star/narrative | OR ignored game script; AND preserves narrative context |
+| Apr 2026 | Logic | Star boost → direction delta (UP/DOWN) | More precise — can now mark underperformers, not just outperformers |
+| Apr 2026 | Tier mults | 2.0/1.25/0.50 → 1.80/1.30/0.70 | Moderate was too narrow; Aggressive at 0.50 produced unusably tight lines |
+| Apr 2026 | Dial scale | Aggressive 1.5→1.3 | 1.5 was compounding too aggressively with the narrative mults |
+
+*Add new rows as you adjust values during the season.*
+
+---
+
 *For implementation questions refer to the source code in `index.html` and `nba_boxscore_importer.gs`*
