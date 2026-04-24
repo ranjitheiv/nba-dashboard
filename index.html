@@ -1773,16 +1773,16 @@ function calcAllGates(values) {
 
   return {
     conservative: {
+      ovr: halfRound(Math.max(0, proj - buf * 2.50)),
+      und: halfRound(proj + buf * 2.50)
+    },
+    moderate: {
       ovr: halfRound(Math.max(0, proj - buf * 1.80)),
       und: halfRound(proj + buf * 1.80)
     },
-    moderate: {
-      ovr: halfRound(Math.max(0, proj - buf * 1.30)),
-      und: halfRound(proj + buf * 1.30)
-    },
     aggressive: {
-      ovr: halfRound(Math.max(0, proj - buf * 0.70)),
-      und: halfRound(proj + buf * 0.70)
+      ovr: halfRound(Math.max(0, proj - buf * 1.10)),
+      und: halfRound(proj + buf * 1.10)
     }
   };
 }
@@ -2789,7 +2789,7 @@ const NARRATIVE_MATRIX = {
 };
 
 // Dial intensity scaling — multiplier is lerped toward 1.0 (conservative) or amplified (aggressive)
-const DIAL_SCALE = { conservative: 0.7, moderate: 1.0, aggressive: 1.3 };
+const DIAL_SCALE = { mild: 0.7, strong: 1.0, extreme: 1.3 };
 
 // STL/BLK floors and ceilings per game
 const STL_FLOOR=0, STL_CEIL=4, BLK_FLOOR=0, BLK_CEIL=4;
@@ -2820,6 +2820,13 @@ function getMinScale(playerData) {
 }
 
 // Gates projection (trend-aware) for a set of values
+function slopeWeight(n) {
+  if (n <= 3) return 0.0;
+  if (n === 4) return 0.2;
+  if (n === 5) return 0.3;
+  return 0.4; // 6+
+}
+
 function gatesProjection(values) {
   if (!values || !values.length) return null;
   const n    = values.length;
@@ -2828,8 +2835,9 @@ function gatesProjection(values) {
   const xMean = (n-1)/2;
   let num=0, den=0;
   values.forEach((v,i)=>{ num+=(i-xMean)*(v-mean); den+=Math.pow(i-xMean,2); });
-  const slope = den>0 ? num/den : 0;
-  const proj  = mean + slope*0.4;
+  const slope  = den>0 ? num/den : 0;
+  const wt     = slopeWeight(n);
+  const proj   = mean + slope * wt;
   return isNaN(proj) ? mean : proj;
 }
 
@@ -3052,7 +3060,7 @@ function openNarrativeBuilder() {
   nbHomeTeam  = teams.home;
   nbAwayTeam  = teams.away;
   nbScenario  = null;
-  nbDial      = 'moderate';
+  nbDial      = 'strong';
   nbHomePicks = new Map();
   nbAwayPicks = new Map();
   nbViewTeam  = 'home';
@@ -3139,9 +3147,20 @@ function renderNbPage() {
       </div>`;
   }).join('');
 
-  const dialHTML = ['conservative','moderate','aggressive'].map(d =>
-    `<button class="nb-dial-opt ${nbDial===d?'active':''}" onclick="setDial('${d}')">${d}</button>`
-  ).join('');
+  const dialDescriptions = {
+    blowA: { mild:'~8 pt margin', strong:'~15 pt margin', extreme:'20+ pt margin' },
+    blowB: { mild:'~8 pt margin', strong:'~15 pt margin', extreme:'20+ pt margin' },
+    grind: { mild:'Slightly defensive', strong:'Low scoring, physical', extreme:'Lockdown battle' },
+    shoot: { mild:'Both teams scoring well', strong:'High pace, open looks', extreme:'Both teams 120+' },
+  };
+  const dialLabels = { mild:'Mild', strong:'Strong', extreme:'Extreme' };
+  const dialHTML = ['mild','strong','extreme'].map(d => {
+    const desc = dialDescriptions[nbScenario] ? dialDescriptions[nbScenario][d] : '';
+    return `<div style="text-align:center;">
+      <button class="nb-dial-opt ${nbDial===d?'active':''}" onclick="setDial('${d}')" style="width:100%;">${dialLabels[d]}</button>
+      ${desc ? `<div style="font-size:9px;color:var(--text-sub);margin-top:3px;letter-spacing:0.5px;max-width:80px;">${desc}</div>` : ''}
+    </div>`;
+  }).join('');
 
   const canSubmit = nbScenario !== null;
 
@@ -3194,12 +3213,17 @@ function renderNbPage() {
 
     <!-- Step 3: Dial (inline in header) -->
     <div class="nb-step">
-      <div class="nb-step-hdr" style="justify-content:space-between;">
+      <div class="nb-step-hdr" style="justify-content:space-between;flex-wrap:wrap;gap:8px;">
         <div style="display:flex;align-items:center;gap:12px;">
           <div class="nb-step-num">3</div>
-          <div class="nb-step-title">SET INTENSITY</div>
+          <div class="nb-step-title">${
+            nbScenario === 'blowA' || nbScenario === 'blowB' ? 'HOW BIG IS THE BLOWOUT?' :
+            nbScenario === 'grind' ? 'HOW DEFENSIVE IS THE GAME?' :
+            nbScenario === 'shoot' ? 'HOW HIGH SCORING IS THE GAME?' :
+            'SET NARRATIVE INTENSITY'
+          }</div>
         </div>
-        <div class="nb-dial-wrap" style="margin:0;">${dialHTML}</div>
+        <div style="display:flex;gap:6px;align-items:flex-start;">${dialHTML}</div>
       </div>
     </div>
 
@@ -3246,7 +3270,8 @@ function setDialAndRefresh(d) {
   nbDial = d;
   // Update step 3 dial buttons
   document.querySelectorAll('.nb-dial-opt').forEach(b => {
-    b.classList.toggle('active', b.textContent.toLowerCase() === d);
+    const label = { mild:'Mild', strong:'Strong', extreme:'Extreme' };
+    b.classList.toggle('active', b.textContent === (label[d] || d));
   });
   // Rebuild output
   submitNarrative();
@@ -3396,7 +3421,7 @@ function submitNarrative() {
   document.getElementById('nbOutput').innerHTML = `
     <div style="border-top:2px solid var(--border-mid);padding-top:20px;">
       <div class="nb-section-title">NARRATIVE: ${scenarioNames[nbScenario].toUpperCase()}</div>
-      <div class="nb-section-sub">Intensity: ${nbDial} · Round ${selRound}</div>
+      <div class="nb-section-sub">${nbDial.charAt(0).toUpperCase()+nbDial.slice(1)} intensity · Round ${selRound}</div>
 
       <!-- SGM BUILDER -->
       <div style="margin-top:20px;margin-bottom:10px;">
@@ -3464,7 +3489,7 @@ function submitNarrative() {
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
         ${toggleHTML}
         <div class="nb-dial-wrap" id="nbDialInline">
-          ${['conservative','moderate','aggressive'].map(d => `<button class="nb-dial-opt ${nbDial===d?'active':''}" onclick="setDialAndRefresh('${d}')">${d.charAt(0).toUpperCase()+d.slice(1)}</button>`).join('')}
+          ${['mild','strong','extreme'].map(d => `<button class="nb-dial-opt ${nbDial===d?'active':''}" onclick="setDialAndRefresh('${d}')>${d==='mild'?'Mild':d==='strong'?'Strong':'Extreme'}</button>`).join('')}
         </div>
       </div>
       <div id="nbProjWrap">${projTable}</div>
@@ -3529,7 +3554,7 @@ function sgmToggleCheck(playerName, teamName) {
   const sgmDirection = (teamName === nbHomeTeam ? nbHomePicks : nbAwayPicks).get(playerName) || null;
   const sgmNarrMult = nbScenario ? NARRATIVE_MATRIX[nbScenario][sgmCat][foundMatrixIdx] : 1.0;
   const sgmAnchor = narrativeAnchor(sgmVals, sgmNarrMult, sgmDirection, sgmAvgTpa, sgmCat, nbDial, sgmMinSc);
-  const tierMults2 = { conservative: 1.80, moderate: 1.30, aggressive: 0.70 };
+  const tierMults2 = { conservative: 2.50, moderate: 1.80, aggressive: 1.10 };
   const gResult2  = sgmGatesFromAnchor(sgmVals, sgmAnchor, tierMults2[sgmGate]);
   const g = { ovr: gResult2.ovr, und: gResult2.und };
   if (sgmSelections.has(key)) {
@@ -3609,7 +3634,7 @@ function renderSGMBuilder() {
     const minScaleSgm = getMinScale(player);
     // Fix: use player.matrixIdx which is now correctly set above
     const narrativeMultSgm = matrix[sgmCat][player.matrixIdx];
-    const tierMults = { conservative: 1.80, moderate: 1.30, aggressive: 0.70 };
+    const tierMults = { conservative: 2.50, moderate: 1.80, aggressive: 1.10 };
     const tierMult = tierMults[sgmGate];
 
     // Narrative-adjusted anchor using gates projection + direction
