@@ -40,6 +40,8 @@ ESPN API → Google Apps Script → Google Sheets → Apps Script Web App → Gi
 
 ### Narrative Builder
 
+Accessed via the **Narrative Builder** button on the team banner (only active once a round and team are selected).
+
 Built around four NBA game narratives:
 
 | Narrative | Description |
@@ -50,23 +52,57 @@ Built around four NBA game narratives:
 | **Shootout** | Close, high-scoring open game |
 
 **Setup flow:**
-1. Select a narrative — Blowout tiles show the team logo, intensity header changes contextually
+1. Select a narrative — Blowout tiles show the team logo. Step 3 header changes contextually: "How big is the blowout?" / "How defensive is the game?" / "How high scoring is the game?"
 2. Mark key players — ↑ (green) for expected outperformers within the narrative, ↓ (red) for underperformers, unmarked for neutral
-3. Set intensity — **Mild / Strong / Extreme** (not Conservative/Moderate/Aggressive — those are for Gates risk tiers). Header changes per narrative: "How big is the blowout?" / "How defensive is the game?" / "How high scoring is the game?"
+3. Set intensity — **Mild / Strong / Extreme** (default: Strong)
 4. Hit Build Narrative
 
-**SGM Builder output:**
-- Category pills (PTS / FGA / TPM / TPA / REB / AST / STL / BLK)
-- Risk tier pills (LOW / MED / HIGH) — these map to Gates Conservative/Moderate/Aggressive
-- Player table showing Over/Under lines, game-by-game actual values, position bubble, and mini range sparkline for all players from both teams sorted by highest series average
-- Checkbox leg selection with running count
-- Current Selections section — numbered list of all selected legs with player, team, category, risk badge, and lines
+---
 
-**Player Projections output:**
-- Full projected stat sheet for every player on both rosters
+### SGM Builder
+
+The SGM Builder is the core leg-building workspace inside the Narrative Builder output. It lets you construct your same-game multi category by category.
+
+**Controls:**
+- **Category pills** (PTS / FGA / TPM / TPA / REB / AST / STL / BLK) — switch stat category
+- **Risk pills** (LOW / MED / HIGH) — maps to Conservative / Moderate / Aggressive Gates tiers
+- **Player table** — all players from both teams sorted by highest series average in the selected category, showing:
+  - Checkbox to select a leg
+  - Player name + team abbreviation (colour coded) + position bubble
+  - **Bet** input — type your chosen line threshold. Leave blank to use narrative projection
+  - Over / Under lines (narrative-adjusted, Gates-buffered)
+  - Conditional extra column — AVG FGA when PTS selected, AVG TPA when TPM selected
+  - Game-by-game actual values with conditional formatting
+  - Mini range sparkline (min/avg/med/max)
+
+**Current Legs section** (collapsible, default collapsed):
+- Numbered list of all selected legs showing: player · team · stat · risk badge · **bet line** · (series avg) · Ovr/Und lines
+- **Build Bet button** (blue outlined) — when clicked, fills any blank bet inputs with the narrative projection for that player, then locks to solid "Bet Built ✓"
+- **Clear All button** — resets all selections and the Build Bet state
+- **Team Summary table** (right panel, 30% width) — after Build Bet is clicked:
+  - Rows: PTS / TPM / REB / AST / STL / BLK
+  - Columns: Home team · STAT · Away team (with logos in header)
+  - Checked legs use your entered bet value
+  - All other players contribute their narrative projection to the team totals
+  - Each cell shows `total (series avg)` — the series average is the sum of each player's actual series average for that stat across the whole team
+  - PTS TOTAL row at the bottom
+  - Card styling with lighter body rows and darker header/footer
+
+**How to use the SGM Builder:**
+1. Select PTS → LOW risk → review the player table → check legs you want to back → type your bet line in the Bet column
+2. Switch to REB → check rebounding legs → type bet lines
+3. Repeat for any other categories
+4. Open Current Legs — review your selections
+5. Hit **Build Bet** — blank bet inputs are filled with narrative projections, the team summary fills in showing your totals vs the full team projection
+6. Use the team summary to check you're not over-indexing on one category (e.g. too many PTS bets on one team)
+
+### Player Projections
+
+Full projected stat sheet for every player on both rosters:
 - ↑ UP / ↓ DOWN direction badges for marked players
-- Projected value vs series average in brackets
-- Home/Away toggle + synced intensity dial
+- Projected value vs series average in brackets `(avg)`
+- Home/Away toggle + synced intensity dial (Mild/Strong/Extreme)
+- Total PTS row showing sum of projections vs narrative score anchor
 
 ---
 
@@ -112,7 +148,7 @@ No server. No database. No ongoing cost.
 
 1. Open `index.html` in a text editor
 2. Set `const WEB_APP_URL = 'your_url_here'`
-3. Set `const PASSWORD = 'your_password_here'`
+3. Set `const PASSWORD = 'letsgo'`
 4. Save
 
 ### Step 3 — GitHub Pages
@@ -164,6 +200,18 @@ Set Google Sheet to **"Anyone with the link can view"** under Share settings.
 | `MATH_AND_LOGIC.md` | Complete formula and multiplier reference |
 | `Narrative_Analyst_Prompt.pdf` | System prompt for a separate Claude chat acting as NBA Narrative Analyst |
 | `NBA_Stats_Tracker_Documentation.pdf` | Internal documentation with screenshot placeholders |
+
+---
+
+## Companion Tool — Narrative Analyst
+
+A separate Claude chat set up using `Narrative_Analyst_Prompt.pdf` acts as your NBA Narrative Analyst. Use it before building bets to:
+- Research upcoming games via web search (injuries, form, home/away records, series context)
+- Get a recommended narrative (Blowout / Grind / Shootout) with confidence level and reasoning
+- Get player ↑/↓ suggestions with explanations
+- Get intensity recommendation (Mild / Strong / Extreme)
+
+Keep the Narrative Analyst chat separate from this repo's chat, which is reserved for dashboard and code changes only.
 
 ---
 
