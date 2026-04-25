@@ -1540,7 +1540,7 @@ html, body {
 //  CONFIG
 // ══════════════════════════════════════════════════════════
 const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbx753C2Wh22B9VerEmGQKgTFU60bHbXUd4gO7_u_9iSkMfdeEyr_qmiz58SYQ1Lk-Q/exec';
-const PASSWORD    = 'letsgo'; // ← change this to whatever you want
+const PASSWORD    = 'nba2026'; // ← change this to whatever you want
 
 // ══════════════════════════════════════════════════════════
 //  STAT DEFINITIONS
@@ -3657,7 +3657,7 @@ function renderSGMBuilder() {
     if (showExtra || showExtraTp) {
       const eKey = showExtra ? extraKey : extraKeyTp;
       const eAvg = getPlayerAvg(player, eKey);
-      extraCell = `<td style="color:var(--text-sub);font-size:11px">${eAvg > 0 ? Math.round(eAvg) : '—'}</td>`;
+      extraCell = `<td style="color:var(--text-sub);font-size:11px;text-align:center;">${eAvg > 0 ? Math.round(eAvg) : '—'}</td>`;
     }
 
     // Game value cells
@@ -3700,6 +3700,7 @@ function renderSGMBuilder() {
       <td style="text-align:center;">${player.pos ? `<span class="pos-bubble ${player.pos==='PG'||player.pos==='SG'||player.pos==='G'?'pos-g':player.pos==='PF'||player.pos==='SF'||player.pos==='F'?'pos-f':player.pos==='C'?'pos-c':'pos-other'}">${player.pos}</span>` : ''}</td>
       <td class="sgm-over">${over}</td>
       <td class="sgm-under">${under}</td>
+      ${extraCell}
       ${gameCells}
       <td>${spark}</td>
     </tr>`;
