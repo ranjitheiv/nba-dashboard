@@ -29,6 +29,7 @@ ESPN API → Google Apps Script → Google Sheets → Apps Script Web App → Gi
 ### Stats Tracker (Main Dashboard)
 
 - **Round + Team filters** populate from your imported data automatically
+- **Team logo** displayed in the banner alongside the team name
 - **vs. subheading** — opposing team shown below the team name for quick context
 - **Flip button** — switches to the opposing team instantly
 - **Paired categories** — selecting PTS always shows FGA alongside it; TPM always shows TPA
@@ -49,14 +50,15 @@ Built around four NBA game narratives:
 | **Shootout** | Close, high-scoring open game |
 
 **Setup flow:**
-1. Select a narrative
-2. Mark key players — ↑ (green) for expected outperformers, ↓ (red) for underperformers, unmarked for neutral
-3. Set intensity dial (Conservative / Moderate / Aggressive)
+1. Select a narrative — Blowout tiles show the team logo, intensity header changes contextually
+2. Mark key players — ↑ (green) for expected outperformers within the narrative, ↓ (red) for underperformers, unmarked for neutral
+3. Set intensity — **Mild / Strong / Extreme** (not Conservative/Moderate/Aggressive — those are for Gates risk tiers). Header changes per narrative: "How big is the blowout?" / "How defensive is the game?" / "How high scoring is the game?"
 4. Hit Build Narrative
 
 **SGM Builder output:**
-- Category + Risk selector pills
-- Player table showing Over/Under lines, actual game values, and mini range sparkline for all players from both teams
+- Category pills (PTS / FGA / TPM / TPA / REB / AST / STL / BLK)
+- Risk tier pills (LOW / MED / HIGH) — these map to Gates Conservative/Moderate/Aggressive
+- Player table showing Over/Under lines, game-by-game actual values, position bubble, and mini range sparkline for all players from both teams sorted by highest series average
 - Checkbox leg selection with running count
 - Current Selections section — numbered list of all selected legs with player, team, category, risk badge, and lines
 
@@ -72,9 +74,9 @@ Built around four NBA game narratives:
 
 | System | Where | What it does |
 |---|---|---|
-| **System 1 — Gates** | Stat Tracker | Pure data-driven Over/Under using trend + standard deviation. No narrative. |
-| **System 2 — Player Projections** | Narrative Builder | Gates projection as anchor, adjusted by narrative + player direction + minutes scale |
-| **System 3 — SGM Builder** | Narrative Builder | Same narrative anchor as System 2, with Gates buffer for Over/Under window |
+| **System 1 — Gates** | Stat Tracker | Pure data-driven Over/Under using trend-aware projection + standard deviation buffer |
+| **System 2 — Player Projections** | Narrative Builder | Gates projection as anchor, adjusted by narrative × direction delta × intensity × minutes scale |
+| **System 3 — SGM Builder** | Narrative Builder | Same narrative anchor as System 2, with Gates buffer applied for Over/Under window |
 
 See `MATH_AND_LOGIC.md` for complete formulas, multipliers, and worked examples.
 
@@ -89,7 +91,7 @@ See `MATH_AND_LOGIC.md` for complete formulas, multipliers, and worked examples.
 | Data API | Google Apps Script Web App |
 | Dashboard | Vanilla HTML + CSS + JavaScript |
 | Hosting | GitHub Pages |
-| Charts | Chart.js |
+| Team logos | ESPN CDN (public URLs) |
 | Fonts | Bebas Neue, Barlow Condensed, DM Mono |
 
 No server. No database. No ongoing cost.
@@ -129,11 +131,9 @@ Set Google Sheet to **"Anyone with the link can view"** under Share settings.
 ## Importing Box Scores
 
 1. Open Google Sheet → **NBA Tools → Import Box Score**
-2. Paste the ESPN URL
+2. Paste the ESPN URL (espn.com or espn.com.au both work)
 3. Enter Round (1–4) and Game (1–7)
 4. Click Import
-
-Fetches both teams, all players (DNPs included with blank stats), splits made/attempted for FG, 3PT, and appends 20 columns to the sheet.
 
 ---
 
@@ -154,12 +154,6 @@ Fetches both teams, all players (DNPs included with blank stats), splits made/at
 
 ---
 
-## Privacy
-
-Password-protected lock screen. Change password by editing `const PASSWORD` in `index.html` and re-uploading. Repository is public (required for free GitHub Pages) — upgrade to GitHub Pro for a private repo with Pages support.
-
----
-
 ## Files
 
 | File | Purpose |
@@ -168,6 +162,7 @@ Password-protected lock screen. Change password by editing `const PASSWORD` in `
 | `nba_boxscore_importer.gs` | Google Apps Script for import + data API |
 | `README.md` | This file |
 | `MATH_AND_LOGIC.md` | Complete formula and multiplier reference |
+| `Narrative_Analyst_Prompt.pdf` | System prompt for a separate Claude chat acting as NBA Narrative Analyst |
 | `NBA_Stats_Tracker_Documentation.pdf` | Internal documentation with screenshot placeholders |
 
 ---
